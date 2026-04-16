@@ -134,10 +134,41 @@ export default function CustomerMenuPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-primary text-primary-foreground px-4 py-5">
-        <div className="text-xs uppercase tracking-wider opacity-80">{ctx.data.table.restaurant_name}</div>
-        <h1 className="text-2xl font-bold">Table {ctx.data.table.label}</h1>
-        <p className="text-sm opacity-90">Tap + to add items, then place your order.</p>
+      <header
+        className="relative overflow-hidden px-4 py-5"
+        style={{
+          background: "linear-gradient(160deg, hsl(0 65% 22%) 0%, hsl(0 60% 18%) 100%)",
+          borderBottom: "2px solid hsl(43 74% 42%)",
+        }}
+      >
+        {/* Ivory chain top strip */}
+        <div className="absolute top-0 left-0 right-0 h-[10px]"
+          style={{
+            backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10'%3E%3Cpath d='M5 5L10 2L15 5L10 8Z' fill='%23F5E6C8' opacity='0.5'/%3E%3Cline x1='15' y1='5' x2='25' y2='5' stroke='%23F5E6C8' stroke-width='0.8' stroke-dasharray='2%2C1' opacity='0.5'/%3E%3Cpath d='M25 5L30 2L35 5L30 8Z' fill='%23F5E6C8' opacity='0.5'/%3E%3Ccircle cx='0' cy='5' r='1.5' fill='%23F5E6C8' opacity='0.5'/%3E%3Ccircle cx='40' cy='5' r='1.5' fill='%23F5E6C8' opacity='0.5'/%3E%3C/svg%3E\")",
+            backgroundRepeat: "repeat-x", backgroundSize: "40px 10px",
+          }}
+        />
+        <div className="mt-2 flex items-center gap-3">
+          <span className="text-2xl">🪷</span>
+          <div>
+            <div className="text-xs uppercase tracking-widest opacity-60" style={{ color: "hsl(38 60% 80%)" }}>
+              {ctx.data.table.restaurant_name}
+            </div>
+            <h1 className="text-2xl font-bold" style={{ color: "hsl(43 74% 82%)", fontFamily: "Georgia, serif" }}>
+              Table {ctx.data.table.label}
+            </h1>
+            <p className="text-sm opacity-75 mt-0.5" style={{ color: "hsl(38 60% 82%)" }}>
+              Tap + to add items, then place your order.
+            </p>
+          </div>
+        </div>
+        {/* Gold chain bottom strip */}
+        <div className="absolute bottom-0 left-0 right-0 h-[10px]"
+          style={{
+            backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10'%3E%3Cpath d='M5 5L10 2L15 5L10 8Z' fill='%23C9920A' opacity='0.5'/%3E%3Cline x1='15' y1='5' x2='25' y2='5' stroke='%23C9920A' stroke-width='0.8' stroke-dasharray='2%2C1' opacity='0.5'/%3E%3Cpath d='M25 5L30 2L35 5L30 8Z' fill='%23C9920A' opacity='0.5'/%3E%3Ccircle cx='0' cy='5' r='1.5' fill='%23C9920A' opacity='0.5'/%3E%3Ccircle cx='40' cy='5' r='1.5' fill='%23C9920A' opacity='0.5'/%3E%3C/svg%3E\")",
+            backgroundRepeat: "repeat-x", backgroundSize: "40px 10px",
+          }}
+        />
       </header>
 
       <main className="max-w-xl mx-auto px-4 py-4 space-y-6">

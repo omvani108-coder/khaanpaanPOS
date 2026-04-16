@@ -2,64 +2,112 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Indian embroidery motifs as reusable SVG strings ────────────────────── */
+
 @layer base {
   :root {
-    --background: 30 40% 98%;
-    --foreground: 20 14% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 20 14% 12%;
-    --primary: 18 85% 48%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 36 33% 94%;
-    --secondary-foreground: 20 14% 12%;
-    --muted: 30 20% 96%;
-    --muted-foreground: 25 8% 45%;
-    --accent: 36 33% 90%;
-    --accent-foreground: 20 14% 12%;
-    --destructive: 0 84% 60%;
+    /* Core palette — warm saffron + ivory + maroon + peacock teal */
+    --background: 38 30% 97%;
+    --foreground: 20 30% 12%;
+    --card: 38 25% 99%;
+    --card-foreground: 20 30% 12%;
+    --primary: 18 85% 42%;          /* deep saffron-maroon */
+    --primary-foreground: 38 60% 96%;
+    --secondary: 43 60% 90%;        /* soft gold */
+    --secondary-foreground: 20 30% 18%;
+    --muted: 38 20% 94%;
+    --muted-foreground: 25 15% 46%;
+    --accent: 43 60% 88%;
+    --accent-foreground: 20 30% 18%;
+    --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 30 15% 88%;
-    --input: 30 15% 88%;
-    --ring: 18 85% 48%;
-    --radius: 0.5rem;
+    --border: 38 25% 82%;
+    --input: 38 25% 85%;
+    --ring: 18 85% 42%;
+    --radius: 0.4rem;
+
+    /* Indian accent tokens */
+    --gold: 43 74% 48%;
+    --maroon: 0 60% 36%;
+    --peacock: 174 55% 40%;
+
+    /* Embroidery border SVGs as CSS vars for use in pseudo-elements */
+    --border-chain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10'%3E%3Cpath d='M5 5L10 2L15 5L10 8Z' fill='%23C9920A' opacity='0.7'/%3E%3Cline x1='15' y1='5' x2='25' y2='5' stroke='%23C9920A' stroke-width='0.8' stroke-dasharray='2%2C1' opacity='0.7'/%3E%3Cpath d='M25 5L30 2L35 5L30 8Z' fill='%23C9920A' opacity='0.7'/%3E%3Ccircle cx='0' cy='5' r='1.5' fill='%23C9920A' opacity='0.7'/%3E%3Ccircle cx='40' cy='5' r='1.5' fill='%23C9920A' opacity='0.7'/%3E%3C/svg%3E");
   }
 
-  .dark {
-    --background: 20 14% 8%;
-    --foreground: 30 20% 95%;
-    --card: 20 14% 12%;
-    --card-foreground: 30 20% 95%;
-    --primary: 18 85% 55%;
-    --primary-foreground: 20 14% 8%;
-    --secondary: 20 10% 18%;
-    --secondary-foreground: 30 20% 95%;
-    --muted: 20 10% 15%;
-    --muted-foreground: 25 8% 65%;
-    --accent: 20 10% 18%;
-    --accent-foreground: 30 20% 95%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 20 10% 20%;
-    --input: 20 10% 20%;
-    --ring: 18 85% 55%;
-  }
-
-  * {
-    @apply border-border;
-  }
-
-  html, body, #root {
-    @apply min-h-screen;
-  }
-
+  * { @apply border-border; }
+  html, body, #root { @apply min-h-screen; }
   body {
     @apply bg-background text-foreground antialiased;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
 }
 
+/* ── Embroidery border utility ───────────────────────────────────────────── */
+@layer utilities {
+  /* Gold diamond-chain border strip — used as top/bottom accent on cards */
+  .embroidery-top {
+    position: relative;
+  }
+  .embroidery-top::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 10px;
+    background-image: var(--border-chain);
+    background-repeat: repeat-x;
+    background-size: 40px 10px;
+    opacity: 0.85;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .embroidery-bottom::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 10px;
+    background-image: var(--border-chain);
+    background-repeat: repeat-x;
+    background-size: 40px 10px;
+    opacity: 0.85;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  /* Paisley corner SVG — top-right decorative stamp on hero cards */
+  .paisley-corner::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 64px;
+    height: 64px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg opacity='0.15' fill='%23C9920A'%3E%3Cellipse cx='44' cy='20' rx='10' ry='18' transform='rotate(30 44 20)'/%3E%3Ccircle cx='40' cy='12' r='4'/%3E%3Cpath d='M52 8 Q60 4 64 8 Q62 16 56 18 Q50 14 52 8Z'/%3E%3Ccircle cx='56' cy='6' r='2'/%3E%3Ccircle cx='62' cy='14' r='1.5'/%3E%3Ccircle cx='48' cy='4' r='1'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 64px 64px;
+    pointer-events: none;
+  }
+
+  /* Lotus stamp background — subtle centred on empty states */
+  .lotus-bg {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cg opacity='0.06' fill='%23C9920A'%3E%3Cellipse cx='60' cy='70' rx='8' ry='20'/%3E%3Cellipse cx='60' cy='70' rx='8' ry='20' transform='rotate(30 60 60)'/%3E%3Cellipse cx='60' cy='70' rx='8' ry='20' transform='rotate(60 60 60)'/%3E%3Cellipse cx='60' cy='70' rx='8' ry='20' transform='rotate(90 60 60)'/%3E%3Cellipse cx='60' cy='70' rx='8' ry='20' transform='rotate(120 60 60)'/%3E%3Cellipse cx='60' cy='70' rx='8' ry='20' transform='rotate(150 60 60)'/%3E%3Cellipse cx='60' cy='70' rx='8' ry='20' transform='rotate(210 60 60)'/%3E%3Cellipse cx='60' cy='70' rx='8' ry='20' transform='rotate(240 60 60)'/%3E%3Cellipse cx='60' cy='70' rx='8' ry='20' transform='rotate(270 60 60)'/%3E%3Cellipse cx='60' cy='70' rx='8' ry='20' transform='rotate(300 60 60)'/%3E%3Cellipse cx='60' cy='70' rx='8' ry='20' transform='rotate(330 60 60)'/%3E%3Ccircle cx='60' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 120px 120px;
+  }
+
+  /* Buti (small floral dot) repeat — card/panel background fill */
+  .buti-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cg opacity='0.07' fill='%23C9920A'%3E%3Ccircle cx='16' cy='16' r='2'/%3E%3Ccircle cx='16' cy='8' r='1'/%3E%3Ccircle cx='24' cy='16' r='1'/%3E%3Ccircle cx='16' cy='24' r='1'/%3E%3Ccircle cx='8' cy='16' r='1'/%3E%3Cpath d='M16 11 L17.5 14.5 L21 14.5 L18.5 16.5 L19.5 20 L16 18 L12.5 20 L13.5 16.5 L11 14.5 L14.5 14.5Z' /%3E%3C/g%3E%3C/svg%3E");
+    background-size: 32px 32px;
+  }
+}
+
+/* ── Scrollbar styling ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(38 30% 78%); border-radius: 3px; }
+
+/* ── Print styles ────────────────────────────────────────────────────────── */
 @media print {
   .no-print { display: none !important; }
   body { background: white; color: black; }
   .print-area { margin: 0; padding: 0; }
+  .embroidery-top::before, .embroidery-bottom::after { display: none; }
 }

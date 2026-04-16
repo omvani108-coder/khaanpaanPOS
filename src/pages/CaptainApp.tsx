@@ -15,7 +15,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   ArrowLeft,
-  ChefHat,
   CheckCircle2,
   Clock,
   Leaf,
@@ -212,7 +211,13 @@ export default function CaptainAppPage() {
   return (
     <div className="min-h-screen bg-background pb-4">
       {/* Top bar */}
-      <header className="bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3 sticky top-0 z-30 no-print">
+      <header className="px-4 py-3 flex items-center gap-3 sticky top-0 z-30 no-print"
+        style={{
+          background: "linear-gradient(90deg, hsl(0 65% 22%) 0%, hsl(0 60% 18%) 100%)",
+          borderBottom: "2px solid hsl(43 74% 42%)",
+          boxShadow: "0 2px 8px hsl(0 65% 10% / 0.3)",
+        }}
+      >
         {view.kind !== "tables" && (
           <button
             onClick={() => setView({ kind: "tables" })}
@@ -221,10 +226,10 @@ export default function CaptainAppPage() {
             <ArrowLeft className="h-5 w-5" />
           </button>
         )}
-        <ChefHat className="h-5 w-5" />
+        <span className="text-xl">🪷</span>
         <div className="flex-1 min-w-0">
-          <div className="font-bold leading-none">Captain App</div>
-          <div className="text-xs opacity-80 truncate">
+          <div className="font-bold leading-none tracking-wider" style={{ color: "hsl(43 74% 82%)", fontFamily: "Georgia, serif" }}>Captain App</div>
+          <div className="text-xs opacity-70 truncate" style={{ color: "hsl(38 60% 78%)" }}>
             {restaurant?.name ?? "Restaurant"} •{" "}
             {staff?.display_name ?? "Waiter"}
           </div>
