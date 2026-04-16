@@ -1,12 +1,12 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, BookOpen, QrCode, Receipt } from "lucide-react";
+import { LayoutGrid, ClipboardList, BookOpen, UserCircle2, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
-  { to: "/dashboard", label: "Home", icon: LayoutDashboard },
+  { to: "/floor", label: "Floor", icon: LayoutGrid },
   { to: "/orders", label: "Orders", icon: ClipboardList },
   { to: "/menu", label: "Menu", icon: BookOpen },
-  { to: "/tables", label: "Tables", icon: QrCode },
+  { to: "/captain", label: "Captain", icon: UserCircle2 },
   { to: "/bills", label: "Bills", icon: Receipt },
 ];
 

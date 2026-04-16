@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 import { formatINR, formatTime } from "@/lib/utils";
+import { computeGST } from "@/lib/gst";
 import { Button } from "@/components/ui/Button";
 
 interface InvoiceDetails {
@@ -29,7 +30,12 @@ interface InvoiceDetails {
     customer_phone: string | null;
     placed_at: string;
     restaurant_tables: { label: string } | null;
-    order_items: { name_snapshot: string; price_snapshot: number; quantity: number }[];
+    order_items: {
+      name_snapshot: string;
+      price_snapshot: number;
+      quantity: number;
+      is_veg?: boolean;
+    }[];
   };
 }
 
@@ -58,7 +64,6 @@ export default function InvoicePrintPage() {
 
   useEffect(() => {
     if (q.data) {
-      // Give the browser a tick to render before auto-print
       const t = setTimeout(() => window.print(), 250);
       return () => clearTimeout(t);
     }
@@ -71,33 +76,55 @@ export default function InvoicePrintPage() {
   const r = inv.restaurants;
   const o = inv.orders;
 
+  // Determine if delivery = IGST; dine-in = CGST + SGST
+  const isIgst = ["zomato", "swiggy"].includes(o.source);
+  const gst = computeGST(inv.subtotal, r.tax_percent, isIgst);
+
+  const isGstRegistered = Boolean(r.gstin?.trim());
+
   return (
     <div className="min-h-screen bg-white text-black p-6 print-area">
-      <div className="max-w-sm mx-auto font-mono text-[13px]">
-        <div className="text-center border-b border-dashed border-black pb-3">
-          <div className="font-bold text-lg">{r.name}</div>
-          {r.address && <div className="text-xs">{r.address}</div>}
-          {r.phone && <div className="text-xs">Ph: {r.phone}</div>}
-          {r.gstin && <div className="text-xs">GSTIN: {r.gstin}</div>}
+      <div className="max-w-sm mx-auto font-mono text-[12px]">
+
+        {/* Restaurant header */}
+        <div className="text-center pb-3 mb-2 border-b border-dashed border-black">
+          <div className="font-black text-base uppercase tracking-wide">{r.name}</div>
+          {r.address && <div className="text-[11px] mt-0.5">{r.address}</div>}
+          {r.phone && <div className="text-[11px]">Ph: {r.phone}</div>}
+          {r.gstin && (
+            <div className="text-[11px] font-bold mt-1">GSTIN: {r.gstin}</div>
+          )}
+          {isGstRegistered && (
+            <div className="text-[10px] uppercase tracking-widest mt-1 font-semibold">
+              {isIgst ? "Tax Invoice (IGST)" : "Tax Invoice"}
+            </div>
+          )}
         </div>
 
-        <div className="py-3 text-xs grid grid-cols-2 gap-y-1">
-          <div>Invoice</div>
+        {/* Invoice meta */}
+        <div className="py-2 text-[11px] grid grid-cols-2 gap-y-0.5">
+          <div>Invoice No.</div>
           <div className="text-right font-bold">{inv.invoice_number}</div>
-          <div>Order</div>
+
+          <div>Order No.</div>
           <div className="text-right">#{o.order_number}</div>
-          <div>Source</div>
-          <div className="text-right uppercase">{o.source.replace("_", " ")}</div>
+
+          <div>Type</div>
+          <div className="text-right capitalize">{o.source.replace("_", "-")}</div>
+
           {o.restaurant_tables && (
             <>
               <div>Table</div>
               <div className="text-right">{o.restaurant_tables.label}</div>
             </>
           )}
-          <div>Placed</div>
+
+          <div>Ordered at</div>
           <div className="text-right">{formatTime(o.placed_at)}</div>
-          <div>Issued</div>
+
+          <div>Issued at</div>
           <div className="text-right">{formatTime(inv.issued_at)}</div>
+
           {o.customer_name && (
             <>
               <div>Customer</div>
@@ -112,39 +139,90 @@ export default function InvoicePrintPage() {
           )}
         </div>
 
+        {/* Items */}
         <div className="border-t border-dashed border-black pt-2">
-          <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 text-xs font-bold border-b border-black pb-1">
+          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-2 text-[10px] font-bold border-b border-black pb-1">
             <div>Item</div>
+            <div className="text-right">Rate</div>
             <div className="text-right">Qty</div>
-            <div className="text-right">Amount</div>
+            <div className="text-right">Amt</div>
           </div>
           {o.order_items.map((it, i) => (
-            <div key={i} className="grid grid-cols-[1fr_auto_auto] gap-x-3 text-xs py-0.5">
+            <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-2 text-[11px] py-0.5 border-b border-dotted border-gray-200 last:border-0">
               <div className="truncate">{it.name_snapshot}</div>
+              <div className="text-right">{formatINR(it.price_snapshot)}</div>
               <div className="text-right">{it.quantity}</div>
               <div className="text-right">{formatINR(it.price_snapshot * it.quantity)}</div>
             </div>
           ))}
         </div>
 
-        <div className="border-t border-dashed border-black mt-2 pt-2 text-xs space-y-0.5">
-          <Row label="Subtotal" value={formatINR(inv.subtotal)} />
-          {inv.discount > 0 && <Row label="Discount" value={`-${formatINR(inv.discount)}`} />}
-          <Row label={`Tax (${r.tax_percent}%)`} value={formatINR(inv.tax)} />
-          <div className="border-t border-black mt-1 pt-1 flex justify-between font-bold text-sm">
+        {/* Totals + GST breakdown */}
+        <div className="border-t border-dashed border-black mt-2 pt-2 text-[11px] space-y-0.5">
+          <Row label="Subtotal" value={formatINR(gst.subtotal)} />
+
+          {inv.discount > 0 && (
+            <Row label="Discount" value={`− ${formatINR(inv.discount)}`} />
+          )}
+
+          {/* GST breakdown — show CGST+SGST or IGST depending on supply type */}
+          {isGstRegistered && (
+            <>
+              {isIgst ? (
+                <Row label={`IGST @ ${r.tax_percent}%`} value={formatINR(gst.igst)} />
+              ) : (
+                <>
+                  <Row label={`CGST @ ${r.tax_percent / 2}%`} value={formatINR(gst.cgst)} />
+                  <Row label={`SGST @ ${r.tax_percent / 2}%`} value={formatINR(gst.sgst)} />
+                </>
+              )}
+            </>
+          )}
+
+          {/* Non-GST registered: just show tax */}
+          {!isGstRegistered && (
+            <Row label={`Tax @ ${r.tax_percent}%`} value={formatINR(gst.totalTax)} />
+          )}
+
+          <div className="border-t-2 border-black mt-1 pt-1 flex justify-between font-black text-sm">
             <span>TOTAL</span>
             <span>{formatINR(inv.total)}</span>
           </div>
+
+          {inv.payment_method && (
+            <Row
+              label="Payment"
+              value={inv.payment_method.toUpperCase()}
+            />
+          )}
         </div>
 
-        <div className="text-center text-xs mt-4 pb-6">
-          Thank you, visit again!
+        {/* GST amounts in words note (required on tax invoice) */}
+        {isGstRegistered && (
+          <div className="mt-2 pt-2 border-t border-dashed border-black text-[10px] text-gray-600 space-y-0.5">
+            {!isIgst && (
+              <>
+                <div>CGST: {formatINR(gst.cgst)} | SGST: {formatINR(gst.sgst)}</div>
+              </>
+            )}
+            {isIgst && (
+              <div>IGST: {formatINR(gst.igst)}</div>
+            )}
+            <div>Total tax: {formatINR(gst.totalTax)}</div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="text-center text-[10px] mt-4 pb-6 space-y-0.5">
+          <div>Thank you, visit again!</div>
+          {isGstRegistered && (
+            <div className="text-gray-500">*This is a computer-generated invoice.</div>
+          )}
         </div>
 
-        <div className="no-print text-center">
-          <Button onClick={() => window.print()} variant="primary">
-            Print
-          </Button>
+        <div className="no-print text-center space-x-3 mt-4">
+          <Button onClick={() => window.print()}>Print</Button>
+          <Button variant="outline" onClick={() => window.close()}>Close</Button>
         </div>
       </div>
     </div>

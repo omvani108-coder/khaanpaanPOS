@@ -84,7 +84,14 @@ export function OrderCard({ order, onAdvance, onCancel, onPrintBill }: Props) {
             Mark {statusLabel[s]}
           </Button>
         ))}
-        {order.status === "served" && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => window.open(`/orders/${order.id}/kot`, "_blank")}
+        >
+          KOT
+        </Button>
+        {(order.status === "served" || order.status === "completed") && (
           <Button size="sm" variant="outline" onClick={() => onPrintBill?.(order.id)}>
             Print bill
           </Button>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "khaanpaan-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "/Users/anamikaanamikaverma/khaanpaan"],
+      "port": 5173
+    }
+  ]
+}

@@ -7,16 +7,18 @@ import DashboardPage from "@/pages/Dashboard";
 import OrdersPage from "@/pages/Orders";
 import MenuPage from "@/pages/Menu";
 import TablesPage from "@/pages/Tables";
+import FloorPlanPage from "@/pages/FloorPlan";
 import DeliveryPage from "@/pages/Delivery";
 import BillsPage from "@/pages/Bills";
 import InvoicePrintPage from "@/pages/InvoicePrint";
+import KotPrintPage from "@/pages/KotPrint";
 import SettingsPage from "@/pages/Settings";
 import CustomerMenuPage from "@/pages/CustomerMenu";
+import CaptainAppPage from "@/pages/CaptainApp";
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
   const { user, loading, demoMode } = useAuth();
   if (loading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
-  // In demo mode, let users explore the staff UI without real auth
   if (!user && !demoMode) return <Navigate to="/login" replace />;
   return children;
 }
@@ -33,7 +35,7 @@ export default function App() {
           {/* Auth */}
           <Route path="/login" element={<LoginPage />} />
 
-          {/* Standalone print view */}
+          {/* Standalone print views — no chrome, no sidebar */}
           <Route
             path="/bills/:id/print"
             element={
@@ -42,8 +44,26 @@ export default function App() {
               </RequireAuth>
             }
           />
+          <Route
+            path="/orders/:orderId/kot"
+            element={
+              <RequireAuth>
+                <KotPrintPage />
+              </RequireAuth>
+            }
+          />
 
-          {/* Staff app */}
+          {/* Captain App — full-screen, no sidebar */}
+          <Route
+            path="/captain"
+            element={
+              <RequireAuth>
+                <CaptainAppPage />
+              </RequireAuth>
+            }
+          />
+
+          {/* Staff app with sidebar layout */}
           <Route
             element={
               <RequireAuth>
@@ -53,6 +73,7 @@ export default function App() {
           >
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/floor" element={<FloorPlanPage />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/tables" element={<TablesPage />} />
