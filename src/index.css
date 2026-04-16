@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 40% 98%;
+    --foreground: 20 14% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 12%;
+    --primary: 18 85% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 36 33% 94%;
+    --secondary-foreground: 20 14% 12%;
+    --muted: 30 20% 96%;
+    --muted-foreground: 25 8% 45%;
+    --accent: 36 33% 90%;
+    --accent-foreground: 20 14% 12%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 15% 88%;
+    --input: 30 15% 88%;
+    --ring: 18 85% 48%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 20 14% 8%;
+    --foreground: 30 20% 95%;
+    --card: 20 14% 12%;
+    --card-foreground: 30 20% 95%;
+    --primary: 18 85% 55%;
+    --primary-foreground: 20 14% 8%;
+    --secondary: 20 10% 18%;
+    --secondary-foreground: 30 20% 95%;
+    --muted: 20 10% 15%;
+    --muted-foreground: 25 8% 65%;
+    --accent: 20 10% 18%;
+    --accent-foreground: 30 20% 95%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 20 10% 20%;
+    --input: 20 10% 20%;
+    --ring: 18 85% 55%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html, body, #root {
+    @apply min-h-screen;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
+  .print-area { margin: 0; padding: 0; }
+}
