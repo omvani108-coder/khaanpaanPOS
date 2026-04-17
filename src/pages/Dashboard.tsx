@@ -56,7 +56,24 @@ export default function DashboardPage() {
   const pending   = orders.filter((o) => ["pending", "preparing", "ready"].includes(o.status));
   const delayed   = orders.filter((o) => displayStatus(o) === "delayed");
   const completed = orders.filter((o) => o.status === "completed");
-  const revenue   = completed.reduce((s, o) => s + Number(o.total), 0);
+
+  // Revenue = sum of today's invoices (more accurate than completed orders)
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const invoicesQ = useQuery<{ total: number }[]>({
+    queryKey: ["invoices_today", restaurant?.id],
+    enabled: Boolean(restaurant?.id) && supabaseConfigured,
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("total")
+        .eq("restaurant_id", restaurant!.id)
+        .gte("issued_at", todayStart.toISOString());
+      if (error) throw error;
+      return (data ?? []) as { total: number }[];
+    },
+  });
+  const revenue = (invoicesQ.data ?? []).reduce((s, i) => s + Number(i.total), 0);
 
   return (
     <div className="space-y-6">

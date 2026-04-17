@@ -27,16 +27,20 @@ function formatDisplayDate(dateStr: string) {
   return d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
 
-interface OrderRow {
+interface InvoiceRow {
   id: string;
-  order_number: number;
   total: number;
-  status: string;
-  source: string;
+  invoice_number: string;
+  payment_status: string;
   payment_method: string | null;
-  placed_at: string;
-  customer_name: string | null;
-  table: { label: string } | null;
+  issued_at: string;
+  orders: {
+    id: string;
+    order_number: number;
+    source: string;
+    customer_name: string | null;
+    table: { label: string } | null;
+  } | null;
 }
 
 const methodColor: Record<string, string> = {
@@ -65,30 +69,29 @@ export default function EarningsPage() {
     setDateStr(toLocalDateStr(d));
   }
 
-  const q = useQuery<OrderRow[]>({
+  const q = useQuery<InvoiceRow[]>({
     queryKey: ["earnings", rid, dateStr],
     enabled: Boolean(rid) && supabaseConfigured,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("orders")
-        .select("id, order_number, total, status, source, payment_method, placed_at, customer_name, table:restaurant_tables(label)")
+        .from("invoices")
+        .select("id, total, invoice_number, payment_status, payment_method, issued_at, orders(id, order_number, source, customer_name, table:restaurant_tables(label))")
         .eq("restaurant_id", rid!)
-        .eq("status", "completed")
-        .gte("placed_at", startOf(dateStr))
-        .lte("placed_at", endOf(dateStr))
-        .order("placed_at", { ascending: false });
+        .gte("issued_at", startOf(dateStr))
+        .lte("issued_at", endOf(dateStr))
+        .order("issued_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as unknown as OrderRow[];
+      return (data ?? []) as unknown as InvoiceRow[];
     },
   });
 
-  const orders = q.data ?? [];
-  const totalRevenue = orders.reduce((s, o) => s + Number(o.total), 0);
-  const totalOrders  = orders.length;
+  const invoices = q.data ?? [];
+  const totalRevenue = invoices.reduce((s, o) => s + Number(o.total), 0);
+  const totalOrders  = invoices.length;
   const avgOrder     = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   const byMethod: Record<string, number> = {};
-  for (const o of orders) {
+  for (const o of invoices) {
     const m = o.payment_method ?? "unpaid";
     byMethod[m] = (byMethod[m] ?? 0) + Number(o.total);
   }
@@ -189,39 +192,50 @@ export default function EarningsPage() {
           <div className="space-y-2">
             {[1,2,3].map((i) => <div key={i} className="h-14 rounded-xl bg-muted animate-pulse" />)}
           </div>
-        ) : orders.length === 0 ? (
+        ) : invoices.length === 0 ? (
           <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
-            No completed orders on this day.
+            No bills generated on this day.
           </div>
         ) : (
           <div className="rounded-xl border bg-card divide-y overflow-hidden">
-            {orders.map((o) => (
-              <div key={o.id} className="flex items-center justify-between px-4 py-3 gap-3">
+            {invoices.map((inv) => (
+              <div key={inv.id} className="flex items-center justify-between px-4 py-3 gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">#{o.order_number}</span>
-                    {o.table && (
-                      <span className="text-xs bg-slate-100 text-slate-600 rounded-full px-2 py-0.5">{o.table.label}</span>
+                    <span className="font-semibold text-sm">{inv.invoice_number}</span>
+                    {inv.orders?.order_number && (
+                      <span className="text-xs text-muted-foreground">Order #{inv.orders.order_number}</span>
                     )}
-                    {o.customer_name && (
-                      <span className="text-xs text-muted-foreground truncate">{o.customer_name}</span>
+                    {inv.orders?.table && (
+                      <span className="text-xs bg-slate-100 text-slate-600 rounded-full px-2 py-0.5">{inv.orders.table.label}</span>
+                    )}
+                    {inv.orders?.customer_name && (
+                      <span className="text-xs text-muted-foreground truncate">{inv.orders.customer_name}</span>
                     )}
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">
-                    {new Date(o.placed_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
-                    {" · "}
-                    <span className="capitalize">{o.source.replace("_", " ")}</span>
+                    {new Date(inv.issued_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                    {inv.orders?.source && (
+                      <> · <span className="capitalize">{inv.orders.source.replace("_", " ")}</span></>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {o.payment_method && (
-                    <Badge className={`text-xs capitalize ${methodColor[o.payment_method] ?? "bg-zinc-100 text-zinc-700"}`}>
-                      {o.payment_method}
+                  <Badge className={
+                    inv.payment_status === "paid" ? "bg-emerald-100 text-emerald-800" :
+                    inv.payment_status === "partial" ? "bg-amber-100 text-amber-800" :
+                    "bg-zinc-100 text-zinc-700"
+                  }>
+                    {inv.payment_status}
+                  </Badge>
+                  {inv.payment_method && (
+                    <Badge className={`text-xs capitalize ${methodColor[inv.payment_method] ?? "bg-zinc-100 text-zinc-700"}`}>
+                      {inv.payment_method}
                     </Badge>
                   )}
-                  <span className="font-bold">{formatINR(o.total)}</span>
+                  <span className="font-bold">{formatINR(inv.total)}</span>
                   <Link
-                    to={`/bills/${o.id}/print`}
+                    to={`/bills/${inv.id}/print`}
                     target="_blank"
                     className="text-muted-foreground hover:text-gold-600 transition-colors"
                     title="Print bill"
