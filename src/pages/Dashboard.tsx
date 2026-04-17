@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import type { To } from "react-router-dom";
 import { ClipboardList, Clock, CheckCircle2, IndianRupee, AlertTriangle, Sparkles, BrainCircuit } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useAuth } from "@/contexts/AuthContext";
@@ -62,23 +62,10 @@ export default function DashboardPage() {
     },
   });
 
-  // Revenue = sum of today's invoices (more accurate than completed orders)
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  const invoicesQ = useQuery<{ total: number }[]>({
-    queryKey: ["invoices_today", restaurant?.id],
-    enabled: Boolean(restaurant?.id) && supabaseConfigured,
-    refetchInterval: 30_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("invoices")
-        .select("total")
-        .eq("restaurant_id", restaurant!.id)
-        .gte("issued_at", todayStart.toISOString());
-      if (error) throw error;
-      return (data ?? []) as { total: number }[];
-    },
-  });
-  const revenue = (invoicesQ.data ?? []).reduce((s, i) => s + Number(i.total), 0);
+  // Revenue = sum of all completed orders today (regardless of bill generation)
+  const revenue = orders
+    .filter((o) => o.status === "completed")
+    .reduce((s, o) => s + Number(o.total), 0);
 
   const pending   = orders.filter((o) => ["pending", "preparing", "ready"].includes(o.status));
   const delayed   = orders.filter((o) => displayStatus(o) === "delayed");
