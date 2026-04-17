@@ -36,11 +36,17 @@ export default function LoginPage() {
       <div className="relative w-full max-w-sm">
         {/* Logo mark */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gold-400 flex items-center justify-center shadow-gold-glow mb-4">
-            <ChefHat className="w-7 h-7 text-[#0A0C10]" />
+          {/* Brand mark: gold cloche + red bowl */}
+          <div className="flex items-center justify-center gap-1.5 mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-gold-500 flex items-center justify-center shadow-gold-glow">
+              <ChefHat className="w-7 h-7 text-white" />
+            </div>
+            <div className="w-9 h-9 rounded-full bg-red-600 flex items-center justify-center shadow-md">
+              <span className="text-white text-lg leading-none">♨</span>
+            </div>
           </div>
-          <div className="font-bold text-2xl tracking-tight text-foreground">KhaanpaanPOS</div>
-          <div className="text-sm text-muted-foreground mt-0.5">खानपान · AI-Powered Restaurant Management</div>
+          <div className="font-bold text-3xl tracking-tight text-gold-600">खान-पान</div>
+          <div className="text-sm text-muted-foreground mt-0.5">AI-Powered Restaurant Management</div>
         </div>
 
         {/* Card */}
@@ -100,7 +106,7 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground/50">
-          KhaanpaanPOS · Made for Indian restaurants · Dine-in · Delivery · QR Orders
+          खान-पान POS · Made for Indian restaurants · Dine-in · Delivery · QR Orders
         </p>
       </div>
     </div>
