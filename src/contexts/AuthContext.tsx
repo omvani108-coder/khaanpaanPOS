@@ -26,23 +26,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [staff, setStaff] = useState<Staff | null>(null);
 
-  // Initial session + subscription
+  // Initial session — keep loading=true until restaurant is also resolved
   useEffect(() => {
     if (!supabaseConfigured) {
       setLoading(false);
       return;
     }
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
+      if (data.session?.user) {
+        // Fetch restaurant before clearing loading so guards never see
+        // a false "no restaurant" state during initial hydration.
+        await refreshRestaurant(data.session.user.id);
+      }
       setLoading(false);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
     });
     return () => sub.subscription.unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch the user's restaurant + staff profile once signed in
+  // Re-fetch whenever the logged-in user changes (sign-in / sign-out)
   useEffect(() => {
     if (!session?.user) {
       setRestaurant(null);
