@@ -1,15 +1,40 @@
+import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { MobileNav } from "./MobileNav";
 import { DemoBanner } from "./DemoBanner";
 import { BhojanBot } from "@/components/bhojanbot/BhojanBot";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOrders } from "@/hooks/useOrders";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase, supabaseConfigured } from "@/lib/supabaseClient";
 
-/** Always-on realtime subscription — runs regardless of which page is open */
+/**
+ * Owns the ONE realtime channel for orders.
+ * Lives at AppLayout level so it's never unmounted during navigation.
+ * All pages read from the TanStack Query cache this keeps fresh.
+ */
 function GlobalOrderWatcher() {
   const { restaurant } = useAuth();
-  useOrders(restaurant?.id); // side-effect only: keeps realtime sub alive + notifies context
+  const qc = useQueryClient();
+  const rid = restaurant?.id;
+
+  useEffect(() => {
+    if (!rid || !supabaseConfigured) return;
+    const chan = supabase
+      .channel(`orders-global-${rid}`)
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "orders", filter: `restaurant_id=eq.${rid}` },
+        () => void qc.invalidateQueries({ queryKey: ["orders", rid] })
+      )
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "order_items" },
+        () => void qc.invalidateQueries({ queryKey: ["orders", rid] })
+      )
+      .subscribe();
+
+    return () => { void supabase.removeChannel(chan); };
+  }, [rid, qc]);
+
   return null;
 }
 

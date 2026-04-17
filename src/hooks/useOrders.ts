@@ -1,19 +1,23 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { supabase, supabaseConfigured } from "@/lib/supabaseClient";
-import type { OrderWithItems } from "@/types/db";
 import { useNewOrders } from "@/contexts/NewOrderContext";
+import type { OrderWithItems } from "@/types/db";
 
-/** Today's orders for the given restaurant, plus realtime updates. */
+/**
+ * Fetches today's orders for a restaurant via React Query (polling every 30s).
+ * Realtime subscription is handled ONCE by GlobalOrderWatcher in AppLayout —
+ * this hook must NOT create its own channel to avoid duplicate-channel crashes.
+ */
 export function useOrders(restaurantId: string | undefined) {
-  const qc = useQueryClient();
   const { notifyNewOrders } = useNewOrders();
   const initializedRef = useRef(false);
+  const qc = useQueryClient();
 
   const query = useQuery<OrderWithItems[]>({
     queryKey: ["orders", restaurantId],
     enabled: Boolean(restaurantId) && supabaseConfigured,
-    refetchInterval: 60_000,
+    refetchInterval: 30_000,
     queryFn: async () => {
       if (!restaurantId) return [];
       const { data, error } = await supabase
@@ -27,14 +31,13 @@ export function useOrders(restaurantId: string | undefined) {
     },
   });
 
-  // Notify context whenever pending order count changes
+  // Notify new-order context when pending count grows
   useEffect(() => {
     if (!query.data) return;
     const pendingCount = query.data.filter((o) =>
       ["pending", "preparing", "ready"].includes(o.status)
     ).length;
     if (!initializedRef.current) {
-      // First load — set baseline silently (don't badge existing orders)
       initializedRef.current = true;
       notifyNewOrders(pendingCount);
       return;
@@ -42,27 +45,10 @@ export function useOrders(restaurantId: string | undefined) {
     notifyNewOrders(pendingCount);
   }, [query.data, notifyNewOrders]);
 
-  useEffect(() => {
-    if (!restaurantId || !supabaseConfigured) return;
-    const chan = supabase
-      .channel(`orders-${restaurantId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders", filter: `restaurant_id=eq.${restaurantId}` },
-        () => qc.invalidateQueries({ queryKey: ["orders", restaurantId] })
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "order_items" },
-        () => qc.invalidateQueries({ queryKey: ["orders", restaurantId] })
-      )
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(chan);
-    };
-  }, [restaurantId, qc]);
-
-  return query;
+  return {
+    ...query,
+    refetch: () => qc.invalidateQueries({ queryKey: ["orders", restaurantId] }),
+  };
 }
 
 function startOfTodayIso(): string {
@@ -77,17 +63,12 @@ export async function updateOrderStatus(
   status: "pending" | "preparing" | "ready" | "served" | "completed" | "cancelled"
 ) {
   const stampField =
-    status === "preparing"
-      ? "preparing_at"
-      : status === "ready"
-      ? "ready_at"
-      : status === "served"
-      ? "served_at"
-      : status === "completed"
-      ? "completed_at"
-      : status === "cancelled"
-      ? "cancelled_at"
-      : null;
+    status === "preparing" ? "preparing_at"
+    : status === "ready"   ? "ready_at"
+    : status === "served"  ? "served_at"
+    : status === "completed" ? "completed_at"
+    : status === "cancelled" ? "cancelled_at"
+    : null;
 
   const payload: Record<string, unknown> = { status };
   if (stampField) payload[stampField] = new Date().toISOString();

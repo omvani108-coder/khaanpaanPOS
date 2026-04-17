@@ -132,7 +132,7 @@ export default function CaptainAppPage() {
     try {
       await updateOrderStatus(orderId, to);
       toast.success(`Marked ${to}`);
-      void refetchOrders();
+      refetchOrders();
     } catch (e) {
       toast.error((e as Error).message);
     }

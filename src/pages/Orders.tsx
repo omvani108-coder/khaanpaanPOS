@@ -47,7 +47,7 @@ export default function OrdersPage() {
     try {
       await updateOrderStatus(id, to);
       toast.success(`Order marked ${to}`);
-      void refetch();
+      refetch();
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -58,7 +58,7 @@ export default function OrdersPage() {
     try {
       await updateOrderStatus(id, "cancelled");
       toast.success("Order cancelled");
-      void refetch();
+      refetch();
     } catch (e) {
       toast.error((e as Error).message);
     }
