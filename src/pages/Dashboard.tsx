@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import type { To } from "react-router-dom";
 import { ClipboardList, Clock, CheckCircle2, IndianRupee, AlertTriangle, Sparkles, BrainCircuit } from "lucide-react";
-import { useQuery, useQueryClient, } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useAuth } from "@/contexts/AuthContext";
-import { updateOrderStatus } from "@/hooks/useOrders";
+import { useOrders, updateOrderStatus } from "@/hooks/useOrders";
 import { useNewOrders } from "@/contexts/NewOrderContext";
 import { formatINR } from "@/lib/utils";
 import { displayStatus } from "@/lib/orderStatus";
@@ -21,14 +21,10 @@ export default function DashboardPage() {
   const { clearNewOrders } = useNewOrders();
   const qc = useQueryClient();
 
-  // Read orders from cache — GlobalOrderWatcher (AppLayout) owns the subscription
-  const orders: OrderWithItems[] = qc.getQueryData(["orders", restaurant?.id]) ?? [];
-
-  // Re-render when cache updates
-  useQuery<OrderWithItems[]>({
-    queryKey: ["orders", restaurant?.id],
-    enabled: false, // don't fetch — just subscribe to cache updates
-  });
+  // Fetch today's orders directly — ensures earnings are populated even on
+  // a cold load of the dashboard (not relying on another page having run first)
+  const { data: ordersData } = useOrders(restaurant?.id);
+  const orders: OrderWithItems[] = ordersData ?? [];
 
   useEffect(() => { clearNewOrders(); }, [clearNewOrders]);
 
@@ -146,7 +142,7 @@ const colorMap = {
   blue:   { bg: "bg-blue-50",    icon: "text-blue-600",    ring: "ring-blue-200"    },
   red:    { bg: "bg-red-50",     icon: "text-red-600",     ring: "ring-red-200"     },
   emerald:{ bg: "bg-emerald-50", icon: "text-emerald-600", ring: "ring-emerald-200" },
-  gold:   { bg: "bg-gold-500/10",icon: "text-gold-600",    ring: "ring-gold-300"    },
+  gold:   { bg: "bg-emerald-50",  icon: "text-emerald-600", ring: "ring-emerald-200", value: "text-emerald-600" },
 };
 
 function StatCard({
@@ -166,7 +162,7 @@ function StatCard({
       </div>
       <div className="min-w-0">
         <div className="text-xs text-muted-foreground truncate">{label}</div>
-        <div className="text-xl font-bold text-foreground">{value}</div>
+        <div className={`text-xl font-bold ${"value" in c ? c.value : "text-foreground"}`}>{value}</div>
       </div>
     </CardContent>
   );
