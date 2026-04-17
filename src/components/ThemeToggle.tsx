@@ -10,18 +10,32 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={toggle}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       className={cn(
-        "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition-all",
-        "text-slate-400 hover:text-slate-700 hover:bg-slate-100",
-        "dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-white/10",
+        "flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-all",
+        "border border-border bg-muted/60 hover:bg-muted",
+        "text-muted-foreground hover:text-foreground",
         className
       )}
     >
-      {isDark ? (
-        <Sun className="h-3.5 w-3.5 text-gold-400" />
-      ) : (
-        <Moon className="h-3.5 w-3.5" />
-      )}
-      {isDark ? "Light" : "Dark"}
+      {/* Track + thumb toggle switch */}
+      <div
+        className={cn(
+          "relative w-9 h-5 rounded-full transition-colors duration-300 flex-shrink-0",
+          isDark ? "bg-gold-500" : "bg-slate-200 dark:bg-slate-600"
+        )}
+      >
+        <span
+          className={cn(
+            "absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 flex items-center justify-center",
+            isDark ? "translate-x-4" : "translate-x-0"
+          )}
+        >
+          {isDark
+            ? <Moon className="w-2.5 h-2.5 text-gold-600" />
+            : <Sun  className="w-2.5 h-2.5 text-amber-500" />
+          }
+        </span>
+      </div>
+      <span className="hidden sm:inline">{isDark ? "Dark" : "Light"}</span>
     </button>
   );
 }

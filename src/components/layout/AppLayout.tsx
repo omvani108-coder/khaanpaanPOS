@@ -4,6 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { MobileNav } from "./MobileNav";
 import { DemoBanner } from "./DemoBanner";
 import { BhojanBot } from "@/components/bhojanbot/BhojanBot";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase, supabaseConfigured } from "@/lib/supabaseClient";
@@ -46,6 +47,10 @@ export function AppLayout() {
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         {demoMode && <DemoBanner />}
+        {/* Top bar */}
+        <header className="h-12 flex items-center justify-end px-4 md:px-8 border-b border-border/50 bg-card/60 backdrop-blur-sm flex-shrink-0">
+          <ThemeToggle />
+        </header>
         <main className="flex-1 overflow-auto">
           <div className="container max-w-7xl py-6 px-4 md:px-8">
             <Outlet />
