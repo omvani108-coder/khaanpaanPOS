@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { NewOrderProvider } from "@/contexts/NewOrderContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import LoginPage from "@/pages/Login";
 import DashboardPage from "@/pages/Dashboard";
@@ -31,6 +32,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <NewOrderProvider>
         <Toaster position="top-right" richColors closeButton />
         <Routes>
           {/* Public customer-facing QR order flow */}
@@ -101,6 +103,7 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        </NewOrderProvider>
       </AuthProvider>
     </BrowserRouter>
   );

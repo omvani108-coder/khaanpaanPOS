@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
-import { ClipboardList, Clock, CheckCircle2, IndianRupee, AlertTriangle, Sparkles, BrainCircuit } from "lucide-react";
+import { useEffect } from "react";
 import type { To } from "react-router-dom";
+import { ClipboardList, Clock, CheckCircle2, IndianRupee, AlertTriangle, Sparkles, BrainCircuit } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOrders } from "@/hooks/useOrders";
+import { useOrders, updateOrderStatus } from "@/hooks/useOrders";
+import { useNewOrders } from "@/contexts/NewOrderContext";
 import { formatINR } from "@/lib/utils";
 import { displayStatus } from "@/lib/orderStatus";
 import { OrderCard } from "@/components/orders/OrderCard";
@@ -15,7 +18,20 @@ const SCHEDULE_URL = `${import.meta.env.VITE_SUPABASE_URL ?? ""}/functions/v1/ai
 
 export default function DashboardPage() {
   const { restaurant } = useAuth();
-  const { data: orders = [] } = useOrders(restaurant?.id);
+  const { data: orders = [], refetch } = useOrders(restaurant?.id);
+  const { clearNewOrders } = useNewOrders();
+
+  useEffect(() => { clearNewOrders(); }, [clearNewOrders]);
+
+  async function handleAdvance(id: string, to: "preparing" | "ready" | "served" | "completed") {
+    try { await updateOrderStatus(id, to); toast.success(`Order marked ${to}`); void refetch(); }
+    catch (e) { toast.error((e as Error).message); }
+  }
+  async function handleCancel(id: string) {
+    if (!confirm("Cancel this order?")) return;
+    try { await updateOrderStatus(id, "cancelled"); toast.success("Order cancelled"); void refetch(); }
+    catch (e) { toast.error((e as Error).message); }
+  }
 
   // BhojanBot daily insight — fetch once per session, 1h cache
   const scheduleQ = useQuery<ScheduleInsight>({
@@ -110,7 +126,7 @@ export default function DashboardPage() {
         ) : (
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mt-3">
             {pending.slice(0, 6).map((o) => (
-              <OrderCard key={o.id} order={o} />
+              <OrderCard key={o.id} order={o} onAdvance={handleAdvance} onCancel={handleCancel} />
             ))}
           </div>
         )}

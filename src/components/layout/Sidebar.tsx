@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNewOrders } from "@/contexts/NewOrderContext";
 
 const navGroups = [
   {
@@ -44,6 +45,7 @@ const navGroups = [
 
 export function Sidebar() {
   const { restaurant, signOut, user } = useAuth();
+  const { newOrderCount, clearNewOrders } = useNewOrders();
 
   return (
     <aside className="hidden md:flex w-56 flex-col no-print bg-white border-r border-border">
@@ -74,10 +76,13 @@ export function Sidebar() {
               {group.label}
             </div>
             <div className="space-y-0.5">
-              {group.items.map(({ to, label, icon: Icon }) => (
+              {group.items.map(({ to, label, icon: Icon }) => {
+                const showDot = newOrderCount > 0 && (to === "/dashboard" || to === "/orders");
+                return (
                 <NavLink
                   key={to}
                   to={to}
+                  onClick={() => { if (to === "/dashboard" || to === "/orders") clearNewOrders(); }}
                   className={({ isActive }) =>
                     cn(
                       "group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-all",
@@ -89,12 +94,23 @@ export function Sidebar() {
                 >
                   {({ isActive }) => (
                     <>
-                      <Icon className={cn("h-3.5 w-3.5 flex-shrink-0", isActive ? "text-gold-600" : "opacity-50 group-hover:opacity-80")} />
+                      <div className="relative flex-shrink-0">
+                        <Icon className={cn("h-3.5 w-3.5", isActive ? "text-gold-600" : "opacity-50 group-hover:opacity-80")} />
+                        {showDot && (
+                          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-green-400 shadow-[0_0_6px_2px_rgba(74,222,128,0.8)] animate-pulse" />
+                        )}
+                      </div>
                       {label}
+                      {showDot && (
+                        <span className="ml-auto text-[10px] font-bold bg-green-400 text-white rounded-full px-1.5 py-0.5 leading-none shadow-[0_0_6px_rgba(74,222,128,0.8)]">
+                          {newOrderCount}
+                        </span>
+                      )}
                     </>
                   )}
                 </NavLink>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}

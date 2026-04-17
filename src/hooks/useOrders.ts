@@ -1,11 +1,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { supabase, supabaseConfigured } from "@/lib/supabaseClient";
 import type { OrderWithItems } from "@/types/db";
+import { useNewOrders } from "@/contexts/NewOrderContext";
 
 /** Today's orders for the given restaurant, plus realtime updates. */
 export function useOrders(restaurantId: string | undefined) {
   const qc = useQueryClient();
+  const { notifyNewOrders } = useNewOrders();
+  const initializedRef = useRef(false);
 
   const query = useQuery<OrderWithItems[]>({
     queryKey: ["orders", restaurantId],
@@ -23,6 +26,21 @@ export function useOrders(restaurantId: string | undefined) {
       return (data ?? []) as unknown as OrderWithItems[];
     },
   });
+
+  // Notify context whenever pending order count changes
+  useEffect(() => {
+    if (!query.data) return;
+    const pendingCount = query.data.filter((o) =>
+      ["pending", "preparing", "ready"].includes(o.status)
+    ).length;
+    if (!initializedRef.current) {
+      // First load — set baseline silently (don't badge existing orders)
+      initializedRef.current = true;
+      notifyNewOrders(pendingCount);
+      return;
+    }
+    notifyNewOrders(pendingCount);
+  }, [query.data, notifyNewOrders]);
 
   useEffect(() => {
     if (!restaurantId || !supabaseConfigured) return;

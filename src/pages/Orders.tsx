@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { updateOrderStatus, useOrders } from "@/hooks/useOrders";
+import { useNewOrders } from "@/contexts/NewOrderContext";
 import { OrderCard } from "@/components/orders/OrderCard";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
@@ -25,7 +26,11 @@ const tabs: { key: Filter; label: string }[] = [
 export default function OrdersPage() {
   const { restaurant } = useAuth();
   const { data: orders = [], refetch } = useOrders(restaurant?.id);
+  const { clearNewOrders } = useNewOrders();
   const [filter, setFilter] = useState<Filter>("active");
+
+  // Clear badge when orders page mounts
+  useEffect(() => { clearNewOrders(); }, [clearNewOrders]);
 
   const filtered = useMemo(() => {
     switch (filter) {
