@@ -53,10 +53,6 @@ export default function DashboardPage() {
     },
   });
 
-  const pending   = orders.filter((o) => ["pending", "preparing", "ready"].includes(o.status));
-  const delayed   = orders.filter((o) => displayStatus(o) === "delayed");
-  const completed = orders.filter((o) => o.status === "completed");
-
   // Revenue = sum of today's invoices (more accurate than completed orders)
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
   const invoicesQ = useQuery<{ total: number }[]>({
@@ -74,6 +70,10 @@ export default function DashboardPage() {
     },
   });
   const revenue = (invoicesQ.data ?? []).reduce((s, i) => s + Number(i.total), 0);
+
+  const pending   = orders.filter((o) => ["pending", "preparing", "ready"].includes(o.status));
+  const delayed   = orders.filter((o) => displayStatus(o) === "delayed");
+  const completed = orders.filter((o) => o.status === "completed");
 
   return (
     <div className="space-y-6">
