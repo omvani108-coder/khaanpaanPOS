@@ -7,6 +7,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNewOrders } from "@/contexts/NewOrderContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navGroups = [
   {
@@ -49,7 +50,7 @@ export function Sidebar() {
   const { newOrderCount, clearNewOrders } = useNewOrders();
 
   return (
-    <aside className="hidden md:flex w-56 flex-col no-print bg-white border-r border-border">
+    <aside className="hidden md:flex w-56 flex-col no-print bg-card border-r border-border">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 h-20 border-b border-border flex-shrink-0">
         <img
@@ -91,7 +92,7 @@ export function Sidebar() {
                       "group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-all",
                       isActive
                         ? "bg-gold-500/10 text-gold-600"
-                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-white/8"
                     )
                   }
                 >
@@ -137,10 +138,13 @@ export function Sidebar() {
             </>
           )}
         </NavLink>
-        <div className="text-[10px] text-muted-foreground truncate px-2 mb-1">{user?.email ?? "Guest"}</div>
+        <div className="flex items-center justify-between px-2 mb-1">
+          <div className="text-[10px] text-muted-foreground truncate">{user?.email ?? "Guest"}</div>
+          <ThemeToggle />
+        </div>
         <button
           onClick={signOut}
-          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12px] text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12px] text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
         >
           <LogOut className="h-3.5 w-3.5" />
           Sign out

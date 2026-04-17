@@ -6,6 +6,16 @@
     <meta name="theme-color" content="#C49418" />
     <title>खान-पान POS — AI Restaurant Management</title>
     <meta name="description" content="खान-पान POS: AI-powered POS & CRM for Indian restaurants — QR ordering, kitchen dashboard, BhojanBot, and GST billing." />
+    <!-- Inline theme script: apply dark class before first paint to avoid flash -->
+    <script>
+      (function() {
+        var saved = localStorage.getItem("khaanpaan-theme");
+        var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (saved === "dark" || (!saved && prefersDark)) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

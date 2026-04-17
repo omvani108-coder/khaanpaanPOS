@@ -26,6 +26,29 @@
     --radius: 0.75rem;
   }
 
+  /* ── Dark mode ──────────────────────────────────────────────────────────── */
+  .dark {
+    --background: 224 20% 9%;          /* #0F1218 — deep dark */
+    --foreground: 215 18% 86%;         /* #D4D9E4 — soft white */
+    --card: 224 18% 13%;               /* #181D27 — dark card */
+    --card-foreground: 215 18% 86%;
+    --popover: 224 18% 13%;
+    --popover-foreground: 215 18% 86%;
+    --primary: 42 74% 52%;             /* gold — slightly brighter in dark */
+    --primary-foreground: 224 20% 9%;
+    --secondary: 224 16% 18%;
+    --secondary-foreground: 215 14% 68%;
+    --muted: 224 16% 17%;              /* dark muted bg */
+    --muted-foreground: 215 10% 52%;
+    --accent: 224 16% 20%;
+    --accent-foreground: 215 18% 86%;
+    --destructive: 0 62% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 16% 22%;             /* subtle dark border */
+    --input: 224 18% 15%;
+    --ring: 42 74% 52%;
+  }
+
   * { @apply border-border; }
 
   html, body, #root { @apply min-h-screen; }
@@ -78,6 +101,7 @@
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: hsl(220 10% 78%); border-radius: 99px; }
+.dark ::-webkit-scrollbar-thumb { background: hsl(220 10% 32%); }
 
 /* ── Print ─────────────────────────────────────────────────────────────────── */
 @media print {

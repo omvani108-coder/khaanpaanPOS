@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useNewOrders } from "@/contexts/NewOrderContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 // Primary 4 items + "More" — bottom bar
 const primary = [
@@ -46,7 +47,7 @@ export function MobileNav() {
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 flex no-print bg-white border-t border-border">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 flex no-print bg-card border-t border-border">
         {primary.map(({ to, label, icon: Icon }) => {
           const showDot = newOrderCount > 0 && (to === "/dashboard" || to === "/orders");
           return (
@@ -97,7 +98,7 @@ export function MobileNav() {
             onClick={() => setOpen(false)}
           />
           {/* Panel */}
-          <div className="absolute bottom-0 inset-x-0 bg-white rounded-t-3xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom">
+          <div className="absolute bottom-0 inset-x-0 bg-card rounded-t-3xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom">
             {/* Handle */}
             <div className="flex justify-center pt-2.5 pb-1">
               <div className="w-10 h-1 rounded-full bg-muted" />
@@ -149,15 +150,16 @@ export function MobileNav() {
               ))}
             </div>
 
-            {/* Sign out */}
-            <div className="border-t border-border/60 p-4 pb-6">
+            {/* Sign out + theme toggle */}
+            <div className="border-t border-border/60 p-4 pb-6 flex gap-2">
               <button
                 onClick={() => { setOpen(false); void signOut(); }}
-                className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 Sign out
               </button>
+              <ThemeToggle className="rounded-xl px-4 py-3 text-sm" />
             </div>
           </div>
         </div>

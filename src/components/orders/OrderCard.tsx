@@ -42,7 +42,7 @@ export function OrderCard({ order, onAdvance, onCancel, onPrintBill }: Props) {
               {prettySource(order.source)}
             </span>
             {order.table && (
-              <span className="text-xs font-semibold text-foreground/60 bg-slate-100 rounded-full px-2 py-0.5">
+              <span className="text-xs font-semibold text-foreground/60 bg-muted rounded-full px-2 py-0.5">
                 {order.table.label}
               </span>
             )}
