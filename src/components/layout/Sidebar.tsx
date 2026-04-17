@@ -51,8 +51,16 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex w-56 flex-col no-print bg-white border-r border-border">
       {/* Logo */}
-      <div className="flex items-center justify-center px-3 h-16 border-b border-border flex-shrink-0">
-        <img src="/logo.png" alt="खान-पान POS" className="h-12 w-auto object-contain" />
+      <div className="flex items-center gap-3 px-4 h-20 border-b border-border flex-shrink-0">
+        <img
+          src="/logo.png"
+          alt="खान-पान POS"
+          className="w-14 h-14 rounded-full object-cover flex-shrink-0 ring-2 ring-gold-400/40 shadow-gold-glow"
+        />
+        <div>
+          <div className="font-bold text-gold-600 text-sm tracking-tight leading-none">खान-पान</div>
+          <div className="text-[9px] text-muted-foreground tracking-widest mt-0.5">AI · POS</div>
+        </div>
       </div>
 
       {/* Restaurant chip */}
