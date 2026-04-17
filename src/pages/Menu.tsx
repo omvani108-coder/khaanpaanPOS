@@ -11,7 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Plus, Trash2, Leaf, Beef, ChevronDown, ChevronUp,
-  Beaker, FlaskConical, Link2, Percent,
+  Beaker, FlaskConical, Link2, Percent, ImagePlus, Loader2,
 } from "lucide-react";
 import { supabase, supabaseConfigured } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
@@ -124,6 +124,28 @@ function ItemsTab() {
     void qc.invalidateQueries({ queryKey: ["menu_items", rid] });
   }
 
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+
+  async function uploadPhoto(item: MenuItem, file: File) {
+    if (!rid) return;
+    setUploadingId(item.id);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${rid}/${item.id}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("menu-images")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) { toast.error(upErr.message); return; }
+      const { data: { publicUrl } } = supabase.storage.from("menu-images").getPublicUrl(path);
+      const { error: dbErr } = await supabase.from("menu_items").update({ image_url: publicUrl }).eq("id", item.id);
+      if (dbErr) { toast.error(dbErr.message); return; }
+      void qc.invalidateQueries({ queryKey: ["menu_items", rid] });
+      toast.success("Photo updated");
+    } finally {
+      setUploadingId(null);
+    }
+  }
+
   const grouped = groupByCategory(items.data ?? [], cats.data ?? []);
 
   return (
@@ -163,8 +185,26 @@ function ItemsTab() {
             <h2 className="font-semibold mb-2">{g.name}</h2>
             <ul className="divide-y rounded-md border bg-card">
               {g.items.map((it) => (
-                <li key={it.id} className="flex items-center justify-between p-3">
-                  <div className="flex items-start gap-2 min-w-0">
+                <li key={it.id} className="flex items-center justify-between p-3 gap-2">
+                  {/* Photo thumbnail / upload */}
+                  <label className="relative shrink-0 cursor-pointer group">
+                    {it.image_url ? (
+                      <img src={it.image_url} alt={it.name} className="w-12 h-12 rounded-lg object-cover border" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg border border-dashed flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-gold-50 group-hover:text-gold-500 transition-colors">
+                        {uploadingId === it.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+                      </div>
+                    )}
+                    {it.image_url && uploadingId === it.id && (
+                      <div className="absolute inset-0 rounded-lg bg-black/40 flex items-center justify-center">
+                        <Loader2 className="h-4 w-4 text-white animate-spin" />
+                      </div>
+                    )}
+                    <input type="file" accept="image/*" className="sr-only" disabled={uploadingId !== null}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(it, f); e.target.value = ""; }} />
+                  </label>
+
+                  <div className="flex items-start gap-2 min-w-0 flex-1">
                     {it.is_veg ? <Leaf className="h-4 w-4 mt-0.5 text-emerald-600 shrink-0" /> : <Beef className="h-4 w-4 mt-0.5 text-rose-600 shrink-0" />}
                     <div className="min-w-0">
                       <div className="font-medium truncate">{it.name}</div>

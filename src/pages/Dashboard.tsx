@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ClipboardList, Clock, CheckCircle2, IndianRupee, AlertTriangle, Sparkles, BrainCircuit } from "lucide-react";
+import type { To } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useAuth } from "@/contexts/AuthContext";
@@ -86,10 +87,10 @@ export default function DashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard icon={<ClipboardList className="h-5 w-5" />} label="Active orders"  value={pending.length}       color="blue"   />
-        <StatCard icon={<AlertTriangle className="h-5 w-5" />} label="Delayed"         value={delayed.length}       color="red"    />
-        <StatCard icon={<CheckCircle2  className="h-5 w-5" />} label="Completed"       value={completed.length}     color="emerald"/>
-        <StatCard icon={<IndianRupee   className="h-5 w-5" />} label="Revenue"         value={formatINR(revenue)}   color="gold"   />
+        <StatCard icon={<ClipboardList className="h-5 w-5" />} label="Active orders"  value={pending.length}       color="blue"    to="/orders" />
+        <StatCard icon={<AlertTriangle className="h-5 w-5" />} label="Delayed"         value={delayed.length}       color="red"     to="/orders" />
+        <StatCard icon={<CheckCircle2  className="h-5 w-5" />} label="Completed"       value={completed.length}     color="emerald" to="/bills"  />
+        <StatCard icon={<IndianRupee   className="h-5 w-5" />} label="Revenue"         value={formatINR(revenue)}   color="gold"    to="/bills"  />
       </div>
 
       {/* Active orders */}
@@ -126,26 +127,32 @@ const colorMap = {
 };
 
 function StatCard({
-  icon, label, value, color,
+  icon, label, value, color, to,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
   color: keyof typeof colorMap;
+  to?: To;
 }) {
   const c = colorMap[color];
-  return (
-    <Card>
-      <CardContent className="p-4 pt-4 flex items-center gap-3">
-        <div className={`rounded-xl p-2.5 flex-shrink-0 ring-1 ${c.bg} ${c.icon} ${c.ring}`}>
-          {icon}
-        </div>
-        <div className="min-w-0">
-          <div className="text-xs text-muted-foreground truncate">{label}</div>
-          <div className="text-xl font-bold text-foreground">{value}</div>
-        </div>
-      </CardContent>
-    </Card>
+  const inner = (
+    <CardContent className="p-4 pt-4 flex items-center gap-3">
+      <div className={`rounded-xl p-2.5 flex-shrink-0 ring-1 ${c.bg} ${c.icon} ${c.ring}`}>
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <div className="text-xs text-muted-foreground truncate">{label}</div>
+        <div className="text-xl font-bold text-foreground">{value}</div>
+      </div>
+    </CardContent>
+  );
+  return to ? (
+    <Link to={to} className="block hover:opacity-80 transition-opacity">
+      <Card>{inner}</Card>
+    </Link>
+  ) : (
+    <Card>{inner}</Card>
   );
 }
 
