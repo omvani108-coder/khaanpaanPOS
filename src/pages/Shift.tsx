@@ -11,7 +11,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  ArrowDownCircle, ArrowUpCircle, Clock, DollarSign,
+  ArrowUpCircle, Clock, DollarSign,
   IndianRupee, Lock, Unlock, AlertTriangle, TrendingUp,
 } from "lucide-react";
 import { supabase, supabaseConfigured } from "@/lib/supabaseClient";
@@ -322,11 +322,7 @@ export default function ShiftPage() {
         <div>
           <h2 className="text-base font-semibold mb-3">Shift History</h2>
           <div className="space-y-3">
-            {history.map((s) => {
-              const disc = s.closing_cash != null
-                ? s.closing_cash - (s.opening_cash + 0) // simplified — full version would store cash_sales
-                : null;
-              return (
+            {history.map((s) => (
                 <div key={s.id} className="rounded-xl border bg-card p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -345,8 +341,7 @@ export default function ShiftPage() {
                   </div>
                   {s.notes && <p className="text-xs text-muted-foreground mt-2 border-t pt-2">{s.notes}</p>}
                 </div>
-              );
-            })}
+            ))}
           </div>
         </div>
       )}

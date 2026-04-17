@@ -277,7 +277,6 @@ function ModifiersTab() {
         {groupsQ.data?.map((g) => (
           <ModifierGroupCard
             key={g.id} group={g} items={itemsQ.data ?? []}
-            rid={rid!}
             onDelete={() => deleteGroup(g.id)}
             onRefresh={() => qc.invalidateQueries({ queryKey: ["modifier_groups", rid] })}
           />
@@ -288,11 +287,10 @@ function ModifiersTab() {
 }
 
 function ModifierGroupCard({
-  group, items, rid, onDelete, onRefresh,
+  group, items, onDelete, onRefresh,
 }: {
   group: ModifierGroup & { modifiers: Modifier[] };
   items: MenuItem[];
-  rid: string;
   onDelete: () => void;
   onRefresh: () => void;
 }) {

@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Minus, Plus, ShoppingCart, CheckCircle2, Leaf, Beef,
-  ChefHat, X, ChevronDown, ChevronUp,
+  ChefHat, X,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/Button";
@@ -91,7 +91,6 @@ export default function CustomerMenuPage() {
     queryKey: ["customer_menu_modifiers", ctx.data?.table.restaurant_id],
     enabled: Boolean(ctx.data?.table.restaurant_id),
     queryFn: async () => {
-      const rid = ctx.data!.table.restaurant_id;
       const { data, error } = await supabase
         .from("menu_item_modifier_groups")
         .select("menu_item_id, group:modifier_groups(*, modifiers(*))")
@@ -99,7 +98,7 @@ export default function CustomerMenuPage() {
       if (error) throw error;
       const map: Record<string, ModifierGroupWithOptions[]> = {};
       for (const row of data ?? []) {
-        const r = row as { menu_item_id: string; group: ModifierGroupWithOptions };
+        const r = row as unknown as { menu_item_id: string; group: ModifierGroupWithOptions };
         if (!map[r.menu_item_id]) map[r.menu_item_id] = [];
         map[r.menu_item_id].push(r.group);
       }

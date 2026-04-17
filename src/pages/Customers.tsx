@@ -295,12 +295,10 @@ function CustomerDetail({
 
   async function saveNotes() {
     setSavingNotes(true);
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("customers")
       .update({ notes: notes.trim() || null })
-      .eq("id", customer.id)
-      .select()
-      .single();
+      .eq("id", customer.id);
     setSavingNotes(false);
     if (error) return toast.error(error.message);
     toast.success("Notes saved");
