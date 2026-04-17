@@ -21,11 +21,20 @@ import KitchenPage from "@/pages/Kitchen";
 import ShiftPage from "@/pages/Shift";
 import CustomersPage from "@/pages/Customers";
 import EarningsPage from "@/pages/Earnings";
+import OnboardingPage from "@/pages/Onboarding";
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
   const { user, loading, demoMode } = useAuth();
   if (loading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
   if (!user && !demoMode) return <Navigate to="/login" replace />;
+  return children;
+}
+
+/** Redirect new users (no restaurant yet) to the onboarding wizard */
+function RequireRestaurant({ children }: { children: React.ReactElement }) {
+  const { user, restaurant, loading, demoMode } = useAuth();
+  if (loading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
+  if (!demoMode && user && !restaurant) return <Navigate to="/onboarding" replace />;
   return children;
 }
 
@@ -41,6 +50,16 @@ export default function App() {
 
           {/* Auth */}
           <Route path="/login" element={<LoginPage />} />
+
+          {/* Onboarding — shown to new users with no restaurant */}
+          <Route
+            path="/onboarding"
+            element={
+              <RequireAuth>
+                <OnboardingPage />
+              </RequireAuth>
+            }
+          />
 
           {/* Standalone print views — no chrome, no sidebar */}
           <Route
@@ -84,7 +103,9 @@ export default function App() {
           <Route
             element={
               <RequireAuth>
-                <AppLayout />
+                <RequireRestaurant>
+                  <AppLayout />
+                </RequireRestaurant>
               </RequireAuth>
             }
           >
