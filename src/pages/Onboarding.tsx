@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ChevronRight, ChevronLeft, CheckCircle2, BookOpen, QrCode, ClipboardList, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
+import { randomToken } from "@/lib/utils";
 
 const STEPS = ["Restaurant Info", "Tables", "All Set!"] as const;
 
@@ -82,9 +83,9 @@ export default function OnboardingPage() {
     try {
       const rows = Array.from({ length: count }, (_, i) => ({
         restaurant_id: rid,
-        name: `Table ${i + 1}`,
-        capacity: 4,
-        status: "available" as const,
+        label: `Table ${i + 1}`,
+        seats: 4,
+        qr_token: randomToken(12),
       }));
       const { error } = await supabase.from("restaurant_tables").insert(rows);
       if (error) throw error;
@@ -332,9 +333,9 @@ export default function OnboardingPage() {
                     href: "/schedule",
                   },
                 ].map((item) => (
-                  <a
+                  <Link
                     key={item.href}
-                    href={item.href}
+                    to={item.href}
                     className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/60 transition-colors group"
                   >
                     <div className="mt-0.5 w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
@@ -345,7 +346,7 @@ export default function OnboardingPage() {
                       <div className="text-xs text-muted-foreground mt-0.5">{item.desc}</div>
                     </div>
                     <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/40 self-center flex-shrink-0" />
-                  </a>
+                  </Link>
                 ))}
               </div>
 
