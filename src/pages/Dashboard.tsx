@@ -79,8 +79,8 @@ export default function DashboardPage() {
         <p className="text-muted-foreground text-sm mt-0.5">Live overview of kitchen, tables, and revenue.</p>
       </div>
 
-      {/* BhojanBot insight card */}
-      {(scheduleQ.data || scheduleQ.isLoading) && (
+      {/* BhojanBot insight card — only shows once real data has loaded (no flash) */}
+      {scheduleQ.data && (
         <Card className="border-gold-400/20 bg-gold-400/5">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
@@ -91,23 +91,17 @@ export default function DashboardPage() {
                 <div className="text-[10px] font-semibold text-gold-600 uppercase tracking-widest mb-0.5">
                   BhojanBot
                 </div>
-                {scheduleQ.isLoading ? (
-                  <div className="h-3 rounded bg-gold-400/15 w-3/4 animate-pulse" />
-                ) : (
-                  <>
-                    <p className="text-sm text-foreground/80">
-                      Peak time: <span className="text-gold-600 font-semibold">{scheduleQ.data!.peak_label}</span>
-                      {" — "}
-                      {scheduleQ.data!.staffing_rec.split("\n")[0].replace(/^[•\-]\s*/, "")}
-                    </p>
-                    <Link
-                      to="/schedule"
-                      className="text-xs text-gold-600/70 hover:text-gold-600 mt-1 inline-flex items-center gap-1 transition-colors"
-                    >
-                      <BrainCircuit className="h-3 w-3" /> Full schedule & analytics →
-                    </Link>
-                  </>
-                )}
+                <p className="text-sm text-foreground/80">
+                  Peak time: <span className="text-gold-600 font-semibold">{scheduleQ.data.peak_label}</span>
+                  {" — "}
+                  {scheduleQ.data.staffing_rec.split("\n")[0].replace(/^[•\-]\s*/, "")}
+                </p>
+                <Link
+                  to="/schedule"
+                  className="text-xs text-gold-600/70 hover:text-gold-600 mt-1 inline-flex items-center gap-1 transition-colors"
+                >
+                  <BrainCircuit className="h-3 w-3" /> Full schedule & analytics →
+                </Link>
               </div>
             </div>
           </CardContent>

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,16 +35,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-sm">
         {/* Logo mark */}
         <div className="flex flex-col items-center mb-8">
-          {/* Brand mark: gold cloche + red bowl */}
-          <div className="flex items-center justify-center gap-1.5 mb-4">
-            <div className="w-14 h-14 rounded-2xl bg-gold-500 flex items-center justify-center shadow-gold-glow">
-              <ChefHat className="w-7 h-7 text-white" />
-            </div>
-            <div className="w-9 h-9 rounded-full bg-red-600 flex items-center justify-center shadow-md">
-              <span className="text-white text-lg leading-none">♨</span>
-            </div>
-          </div>
-          <div className="font-bold text-3xl tracking-tight text-gold-600">खान-पान</div>
+          <img src="/logo.png" alt="खान-पान POS" className="h-28 w-auto object-contain mb-3" />
           <div className="text-sm text-muted-foreground mt-0.5">AI-Powered Restaurant Management</div>
         </div>
 

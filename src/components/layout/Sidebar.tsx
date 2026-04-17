@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, ClipboardList, BookOpen, QrCode, Receipt,
-  Truck, Settings, LogOut, LayoutGrid, UserCircle2, ChefHat, BrainCircuit,
+  Truck, Settings, LogOut, LayoutGrid, UserCircle2, BrainCircuit,
   UtensilsCrossed, IndianRupee, Users, TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -51,20 +51,8 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex w-56 flex-col no-print bg-white border-r border-border">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-4 h-14 border-b border-border flex-shrink-0">
-        {/* Cloche icon in gold + bowl in red */}
-        <div className="flex items-center gap-0.5 flex-shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-gold-500 flex items-center justify-center shadow-gold-glow">
-            <ChefHat className="w-3.5 h-3.5 text-white" />
-          </div>
-          <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center">
-            <span className="text-[6px] text-white font-bold leading-none">♨</span>
-          </div>
-        </div>
-        <div>
-          <div className="font-bold text-gold-600 text-sm tracking-tight leading-none">खान-पान</div>
-          <div className="text-[9px] text-muted-foreground tracking-widest mt-0.5">AI · POS</div>
-        </div>
+      <div className="flex items-center justify-center px-3 h-16 border-b border-border flex-shrink-0">
+        <img src="/logo.png" alt="खान-पान POS" className="h-12 w-auto object-contain" />
       </div>
 
       {/* Restaurant chip */}
