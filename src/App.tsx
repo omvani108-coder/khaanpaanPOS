@@ -20,6 +20,7 @@ import SchedulePage from "@/pages/Schedule";
 import KitchenPage from "@/pages/Kitchen";
 import ShiftPage from "@/pages/Shift";
 import CustomersPage from "@/pages/Customers";
+import EarningsPage from "@/pages/Earnings";
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
   const { user, loading, demoMode } = useAuth();
@@ -98,6 +99,7 @@ export default function App() {
             <Route path="/schedule" element={<SchedulePage />} />
             <Route path="/shift" element={<ShiftPage />} />
             <Route path="/customers" element={<CustomersPage />} />
+            <Route path="/earnings" element={<EarningsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
 

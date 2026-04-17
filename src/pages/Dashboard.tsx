@@ -106,7 +106,7 @@ export default function DashboardPage() {
         <StatCard icon={<ClipboardList className="h-5 w-5" />} label="Active orders"  value={pending.length}       color="blue"    to="/orders" />
         <StatCard icon={<AlertTriangle className="h-5 w-5" />} label="Delayed"         value={delayed.length}       color="red"     to="/orders" />
         <StatCard icon={<CheckCircle2  className="h-5 w-5" />} label="Completed"       value={completed.length}     color="emerald" to="/bills"  />
-        <StatCard icon={<IndianRupee   className="h-5 w-5" />} label="Revenue"         value={formatINR(revenue)}   color="gold"    to="/bills"  />
+        <StatCard icon={<IndianRupee   className="h-5 w-5" />} label="Today's Earnings" value={formatINR(revenue)}   color="gold"    to="/earnings" />
       </div>
 
       {/* Active orders */}

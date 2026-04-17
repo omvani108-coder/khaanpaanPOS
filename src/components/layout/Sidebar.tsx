@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, ClipboardList, BookOpen, QrCode, Receipt,
   Truck, Settings, LogOut, LayoutGrid, UserCircle2, ChefHat, BrainCircuit,
-  UtensilsCrossed, IndianRupee, Users,
+  UtensilsCrossed, IndianRupee, Users, TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,7 @@ const navGroups = [
       { to: "/orders",    label: "Orders",     icon: ClipboardList },
       { to: "/floor",     label: "Floor Plan", icon: LayoutGrid },
       { to: "/bills",     label: "Bills",      icon: Receipt },
+      { to: "/earnings",  label: "Earnings",   icon: TrendingUp },
     ],
   },
   {
