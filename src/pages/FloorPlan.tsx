@@ -86,18 +86,18 @@ export default function FloorPlanPage() {
           label="Occupied"
           value={tables.filter((t) => activeByTable.has(t.id)).length}
           of={tables.length}
-          color="bg-amber-100 text-amber-900"
+          color="bg-amber-400/10 text-amber-400 ring-1 ring-amber-400/20"
         />
         <StatPill
           label="Free"
           value={tables.filter((t) => !activeByTable.has(t.id)).length}
           of={tables.length}
-          color="bg-emerald-100 text-emerald-900"
+          color="bg-emerald-400/10 text-emerald-400 ring-1 ring-emerald-400/20"
         />
         <StatPill
           label="Active orders"
           value={orders.filter((o) => !["completed", "cancelled"].includes(o.status)).length}
-          color="bg-blue-100 text-blue-900"
+          color="bg-blue-400/10 text-blue-400 ring-1 ring-blue-400/20"
         />
       </div>
     </div>
@@ -156,7 +156,7 @@ function TableTile({
 
       {/* Free indicator */}
       {!isOccupied && (
-        <div className="mt-2 flex items-center gap-1 text-xs text-emerald-600">
+        <div className="mt-2 flex items-center gap-1 text-xs text-emerald-400/70">
           <ChefHat className="h-3 w-3" />
           Free
         </div>

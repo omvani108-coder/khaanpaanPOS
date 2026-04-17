@@ -4,24 +4,24 @@ import type { Order, OrderStatus } from "@/types/db";
 export type DisplayStatus = OrderStatus | "delayed";
 
 export const statusLabel: Record<DisplayStatus, string> = {
-  pending: "Pending",
+  pending:   "Pending",
   preparing: "Preparing",
-  ready: "Ready",
-  served: "Served",
+  ready:     "Ready",
+  served:    "Served",
   completed: "Completed",
   cancelled: "Cancelled",
-  delayed: "Delayed",
+  delayed:   "Delayed",
 };
 
-/** Tailwind classes for status pill. */
+/** Tailwind classes for status pill — light theme. */
 export const statusClass: Record<DisplayStatus, string> = {
-  pending: "bg-amber-100 text-amber-900 ring-1 ring-amber-300",
-  preparing: "bg-blue-100 text-blue-900 ring-1 ring-blue-300",
-  ready: "bg-emerald-100 text-emerald-900 ring-1 ring-emerald-300",
-  served: "bg-teal-100 text-teal-900 ring-1 ring-teal-300",
-  completed: "bg-zinc-100 text-zinc-800 ring-1 ring-zinc-300",
-  cancelled: "bg-rose-100 text-rose-900 ring-1 ring-rose-300",
-  delayed: "bg-red-100 text-red-900 ring-1 ring-red-400 animate-pulse",
+  pending:   "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+  preparing: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
+  ready:     "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+  served:    "bg-teal-50 text-teal-700 ring-1 ring-teal-200",
+  completed: "bg-slate-100 text-slate-500 ring-1 ring-slate-200",
+  cancelled: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
+  delayed:   "bg-red-50 text-red-700 ring-1 ring-red-200 animate-pulse",
 };
 
 /** Compute whether an order should render as "delayed" based on SLA. */
@@ -38,10 +38,10 @@ export function displayStatus(order: Pick<Order, "status" | "placed_at" | "sla_m
 
 /** Allowed forward transitions from a given state. */
 export const nextStatuses: Record<OrderStatus, OrderStatus[]> = {
-  pending: ["preparing", "cancelled"],
+  pending:   ["preparing", "cancelled"],
   preparing: ["ready", "cancelled"],
-  ready: ["served", "cancelled"],
-  served: ["completed"],
+  ready:     ["served", "cancelled"],
+  served:    ["completed"],
   completed: [],
   cancelled: [],
 };

@@ -15,6 +15,10 @@ import KotPrintPage from "@/pages/KotPrint";
 import SettingsPage from "@/pages/Settings";
 import CustomerMenuPage from "@/pages/CustomerMenu";
 import CaptainAppPage from "@/pages/CaptainApp";
+import SchedulePage from "@/pages/Schedule";
+import KitchenPage from "@/pages/Kitchen";
+import ShiftPage from "@/pages/Shift";
+import CustomersPage from "@/pages/Customers";
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
   const { user, loading, demoMode } = useAuth();
@@ -63,6 +67,16 @@ export default function App() {
             }
           />
 
+          {/* Kitchen Display System — full-screen for kitchen tablet */}
+          <Route
+            path="/kitchen"
+            element={
+              <RequireAuth>
+                <KitchenPage />
+              </RequireAuth>
+            }
+          />
+
           {/* Staff app with sidebar layout */}
           <Route
             element={
@@ -79,6 +93,9 @@ export default function App() {
             <Route path="/tables" element={<TablesPage />} />
             <Route path="/delivery" element={<DeliveryPage />} />
             <Route path="/bills" element={<BillsPage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/shift" element={<ShiftPage />} />
+            <Route path="/customers" element={<CustomersPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
 

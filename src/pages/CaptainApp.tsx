@@ -10,12 +10,13 @@
  *
  * Uses the same Supabase client as the staff app — requires auth.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   ArrowLeft,
   CheckCircle2,
+  ChefHat,
   Clock,
   Leaf,
   Beef,
@@ -31,6 +32,7 @@ import { useOrders, updateOrderStatus } from "@/hooks/useOrders";
 import { Button } from "@/components/ui/Button";
 import { cn, elapsedLabel, formatINR, nextInvoiceNumber } from "@/lib/utils";
 import { displayStatus, nextStatuses, statusClass, statusLabel } from "@/lib/orderStatus";
+import { WaiterNotification } from "@/components/orders/WaiterNotification";
 import type { MenuCategory, MenuItem, OrderWithItems, RestaurantTable } from "@/types/db";
 
 // ─── top-level view state ────────────────────────────────────────────────────
@@ -44,6 +46,8 @@ export default function CaptainAppPage() {
   const rid = restaurant?.id;
   const qc = useQueryClient();
   const [view, setView] = useState<View>({ kind: "tables" });
+  const [notification, setNotification] = useState<OrderWithItems | null>(null);
+  const prevOrderIdsRef = useRef<Set<string>>(new Set());
 
   // Tables
   const tablesQ = useQuery<RestaurantTable[]>({
@@ -92,6 +96,23 @@ export default function CaptainAppPage() {
   });
 
   const { data: orders = [], refetch: refetchOrders } = useOrders(rid);
+
+  // ── Waiter notification: detect new orders on assigned tables ────────────
+  useEffect(() => {
+    if (!staff || !tablesQ.data) return;
+    const myTableIds = new Set(
+      tablesQ.data.filter((t) => t.assigned_waiter_id === staff.id).map((t) => t.id)
+    );
+    const newOrders = orders.filter(
+      (o) =>
+        !prevOrderIdsRef.current.has(o.id) &&
+        o.table_id != null &&
+        myTableIds.has(o.table_id) &&
+        o.status === "pending"
+    );
+    if (newOrders.length > 0) setNotification(newOrders[0]);
+    prevOrderIdsRef.current = new Set(orders.map((o) => o.id));
+  }, [orders, staff, tablesQ.data]);
 
   const activeByTable = useMemo(() => {
     const map = new Map<string, OrderWithItems[]>();
@@ -210,34 +231,32 @@ export default function CaptainAppPage() {
   // ── render ──
   return (
     <div className="min-h-screen bg-background pb-4">
+      {notification && (
+        <WaiterNotification order={notification} onDismiss={() => setNotification(null)} />
+      )}
       {/* Top bar */}
-      <header className="px-4 py-3 flex items-center gap-3 sticky top-0 z-30 no-print"
-        style={{
-          background: "linear-gradient(90deg, hsl(0 65% 22%) 0%, hsl(0 60% 18%) 100%)",
-          borderBottom: "2px solid hsl(43 74% 42%)",
-          boxShadow: "0 2px 8px hsl(0 65% 10% / 0.3)",
-        }}
-      >
+      <header className="px-4 h-14 flex items-center gap-3 sticky top-0 z-30 no-print bg-white border-b border-border">
         {view.kind !== "tables" && (
           <button
             onClick={() => setView({ kind: "tables" })}
-            className="p-1 rounded hover:bg-primary-foreground/20"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
         )}
-        <span className="text-xl">🪷</span>
+        <div className="w-7 h-7 rounded-lg bg-gold-500 flex items-center justify-center flex-shrink-0 shadow-gold-glow">
+          <ChefHat className="w-4 h-4 text-white" />
+        </div>
         <div className="flex-1 min-w-0">
-          <div className="font-bold leading-none tracking-wider" style={{ color: "hsl(43 74% 82%)", fontFamily: "Georgia, serif" }}>Captain App</div>
-          <div className="text-xs opacity-70 truncate" style={{ color: "hsl(38 60% 78%)" }}>
-            {restaurant?.name ?? "Restaurant"} •{" "}
-            {staff?.display_name ?? "Waiter"}
+          <div className="font-bold text-sm text-foreground leading-none">Captain App</div>
+          <div className="text-[10px] text-muted-foreground truncate mt-0.5">
+            {restaurant?.name ?? "Restaurant"} · {staff?.display_name ?? "Waiter"}
           </div>
         </div>
         {view.kind === "table_detail" && (
           <Button
             size="sm"
-            variant="secondary"
+            variant="primary"
             className="shrink-0"
             onClick={() => setView({ kind: "new_order", table: view.table })}
           >
@@ -251,6 +270,7 @@ export default function CaptainAppPage() {
           <TablesView
             tables={tablesQ.data ?? []}
             activeByTable={activeByTable}
+            staffId={staff?.id ?? null}
             onSelectTable={(t) => setView({ kind: "table_detail", table: t })}
           />
         )}
@@ -292,20 +312,47 @@ export default function CaptainAppPage() {
 function TablesView({
   tables,
   activeByTable,
+  staffId,
   onSelectTable,
 }: {
   tables: RestaurantTable[];
   activeByTable: Map<string, OrderWithItems[]>;
+  staffId: string | null;
   onSelectTable: (t: RestaurantTable) => void;
 }) {
+  const [filter, setFilter] = useState<"mine" | "all">("mine");
+  const myTables = tables.filter((t) => t.assigned_waiter_id === staffId);
+  const displayed = filter === "mine" && myTables.length > 0 ? myTables : tables;
+
   return (
     <div className="space-y-3">
-      <h2 className="font-semibold text-lg">Tables</h2>
-      {tables.length === 0 && (
-        <p className="text-muted-foreground text-sm">No tables set up.</p>
+      {/* Tab switcher */}
+      <div className="flex gap-2">
+        {(["mine", "all"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={cn(
+              "flex-1 py-2 rounded-xl text-sm font-medium transition-all",
+              filter === f
+                ? "bg-gold-500/10 text-gold-600 ring-1 ring-gold-300"
+                : "bg-slate-100 text-slate-500 hover:text-slate-700"
+            )}
+          >
+            {f === "mine"
+              ? `My Tables ${myTables.length > 0 ? `(${myTables.length})` : ""}`
+              : `All (${tables.length})`}
+          </button>
+        ))}
+      </div>
+
+      {displayed.length === 0 && (
+        <p className="text-muted-foreground text-sm py-4 text-center">
+          {filter === "mine" ? "No tables assigned to you yet." : "No tables set up."}
+        </p>
       )}
       <div className="grid grid-cols-2 gap-3">
-        {tables.map((t) => {
+        {displayed.map((t) => {
           const tableOrders = activeByTable.get(t.id) ?? [];
           const topOrder = tableOrders[0] ?? null;
           const ds = topOrder ? displayStatus(topOrder) : null;

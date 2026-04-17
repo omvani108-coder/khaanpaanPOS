@@ -1,8 +1,9 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { MobileNav } from "./MobileNav";
-import { useAuth } from "@/contexts/AuthContext";
 import { DemoBanner } from "./DemoBanner";
+import { BhojanBot } from "@/components/bhojanbot/BhojanBot";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function AppLayout() {
   const { demoMode } = useAuth();
@@ -18,6 +19,8 @@ export function AppLayout() {
         </main>
         <MobileNav />
       </div>
+      {/* BhojanBot — floating AI assistant, visible across all staff pages */}
+      <BhojanBot />
     </div>
   );
 }
