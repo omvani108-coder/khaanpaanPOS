@@ -1,27 +1,42 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { NewOrderProvider } from "@/contexts/NewOrderContext";
 import { AppLayout } from "@/components/layout/AppLayout";
+
+// Core routes — eager (owner uses these every session)
 import LoginPage from "@/pages/Login";
 import DashboardPage from "@/pages/Dashboard";
 import OrdersPage from "@/pages/Orders";
-import MenuPage from "@/pages/Menu";
-import TablesPage from "@/pages/Tables";
-import FloorPlanPage from "@/pages/FloorPlan";
-import DeliveryPage from "@/pages/Delivery";
-import BillsPage from "@/pages/Bills";
-import InvoicePrintPage from "@/pages/InvoicePrint";
-import KotPrintPage from "@/pages/KotPrint";
-import SettingsPage from "@/pages/Settings";
-import CustomerMenuPage from "@/pages/CustomerMenu";
-import CaptainAppPage from "@/pages/CaptainApp";
-import SchedulePage from "@/pages/Schedule";
-import KitchenPage from "@/pages/Kitchen";
-import ShiftPage from "@/pages/Shift";
-import CustomersPage from "@/pages/Customers";
-import EarningsPage from "@/pages/Earnings";
 import OnboardingPage from "@/pages/Onboarding";
+
+// Secondary routes — lazy-loaded to keep main bundle lean
+const MenuPage        = lazy(() => import("@/pages/Menu"));
+const TablesPage      = lazy(() => import("@/pages/Tables"));
+const FloorPlanPage   = lazy(() => import("@/pages/FloorPlan"));
+const DeliveryPage    = lazy(() => import("@/pages/Delivery"));
+const BillsPage       = lazy(() => import("@/pages/Bills"));
+const SettingsPage    = lazy(() => import("@/pages/Settings"));
+const SchedulePage    = lazy(() => import("@/pages/Schedule"));
+const ShiftPage       = lazy(() => import("@/pages/Shift"));
+const CustomersPage   = lazy(() => import("@/pages/Customers"));
+const EarningsPage    = lazy(() => import("@/pages/Earnings"));
+
+// Standalone full-screen routes — always lazy (different user personas)
+const InvoicePrintPage = lazy(() => import("@/pages/InvoicePrint"));
+const KotPrintPage     = lazy(() => import("@/pages/KotPrint"));
+const CustomerMenuPage = lazy(() => import("@/pages/CustomerMenu"));
+const CaptainAppPage   = lazy(() => import("@/pages/CaptainApp"));
+const KitchenPage      = lazy(() => import("@/pages/Kitchen"));
+
+function PageFallback() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="text-muted-foreground text-sm">Loading…</div>
+    </div>
+  );
+}
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
   const { user, loading, demoMode } = useAuth();
@@ -44,6 +59,7 @@ export default function App() {
       <AuthProvider>
         <NewOrderProvider>
         <Toaster position="top-right" richColors closeButton />
+        <Suspense fallback={<PageFallback />}>
         <Routes>
           {/* Public customer-facing QR order flow */}
           <Route path="/t/:token" element={<CustomerMenuPage />} />
@@ -126,6 +142,7 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        </Suspense>
         </NewOrderProvider>
       </AuthProvider>
     </BrowserRouter>

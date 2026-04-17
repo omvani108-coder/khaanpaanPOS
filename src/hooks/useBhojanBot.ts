@@ -78,6 +78,10 @@ export function useBhojanBot() {
           }),
         });
 
+        if (!res.ok) {
+          throw new Error(`BhojanBot is unavailable right now (${res.status})`);
+        }
+
         const data: { reply: string; actions: BhojanBotAction[] } = await res.json();
 
         // Persist to bhojanbot_messages

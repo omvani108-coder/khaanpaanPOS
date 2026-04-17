@@ -74,7 +74,8 @@ export default function KitchenPage() {
   const ordersQ = useQuery<OrderWithItems[]>({
     queryKey: ["kds_orders", rid],
     enabled: Boolean(rid) && supabaseConfigured,
-    staleTime: 0,
+    // realtime subscription (below) invalidates on change — no need for staleTime:0
+    staleTime: 10_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")

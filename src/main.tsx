@@ -7,9 +7,13 @@ import App from "./App";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 10_000,
+      // 30s default — realtime subscriptions handle urgent invalidations;
+      // this prevents needless refetches on tab/nav switches.
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
       retry: 1,
       refetchOnWindowFocus: false,
+      refetchOnReconnect: "always",
     },
   },
 });

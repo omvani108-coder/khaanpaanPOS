@@ -164,7 +164,7 @@ export default function EarningsPage() {
       if (error) throw error;
       toast.success(`Bill ${nextNum} generated`);
       void qc.invalidateQueries({ queryKey: ["earnings_invoices", rid, dateStr] });
-      void qc.invalidateQueries({ queryKey: ["invoices_today", rid] });
+      void qc.invalidateQueries({ queryKey: ["invoices"] }); // Bills page
       window.open(`/bills/${data.id}/print`, "_blank");
     } catch (e) {
       toast.error((e as Error).message);
