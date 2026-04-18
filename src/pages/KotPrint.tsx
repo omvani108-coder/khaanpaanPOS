@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 import { formatTime } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
+import { getPaperSize, paperClass } from "@/lib/printSettings";
 
 interface KotData {
   id: string;
@@ -56,7 +57,7 @@ export default function KotPrintPage() {
   const source = o.source.replace("_", " ").toUpperCase();
 
   return (
-    <div className="min-h-screen bg-white text-black p-4 print-area">
+    <div className={`min-h-screen bg-white text-black p-4 print-area ${paperClass(getPaperSize())}`}>
       <div className="max-w-[280px] mx-auto font-mono text-[14px] leading-snug">
 
         {/* Header */}

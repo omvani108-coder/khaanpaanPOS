@@ -5,6 +5,8 @@ import { supabase } from "@/lib/supabaseClient";
 import { formatINR, formatTime } from "@/lib/utils";
 import { computeGST } from "@/lib/gst";
 import { Button } from "@/components/ui/Button";
+import { getPaperSize, setPaperSize, paperClass, type PaperSize } from "@/lib/printSettings";
+import { useState } from "react";
 
 interface InvoiceDetails {
   id: string;
@@ -41,6 +43,8 @@ interface InvoiceDetails {
 
 export default function InvoicePrintPage() {
   const { id } = useParams<{ id: string }>();
+  const [paper, setPaper] = useState<PaperSize>(getPaperSize());
+  function onPaperChange(p: PaperSize) { setPaper(p); setPaperSize(p); }
 
   const q = useQuery<InvoiceDetails>({
     queryKey: ["invoice_print", id],
@@ -83,7 +87,7 @@ export default function InvoicePrintPage() {
   const isGstRegistered = Boolean(r.gstin?.trim());
 
   return (
-    <div className="min-h-screen bg-white text-black p-6 print-area">
+    <div className={`min-h-screen bg-white text-black p-6 print-area ${paperClass(paper)}`}>
       <div className="max-w-sm mx-auto font-mono text-[12px]">
 
         {/* Restaurant header */}
@@ -220,9 +224,34 @@ export default function InvoicePrintPage() {
           )}
         </div>
 
-        <div className="no-print text-center space-x-3 mt-4">
-          <Button onClick={() => window.print()}>Print</Button>
-          <Button variant="outline" onClick={() => window.close()}>Close</Button>
+        <div className="no-print mt-6 space-y-3 text-center">
+          <div className="flex items-center justify-center gap-2 text-xs">
+            <span className="text-muted-foreground">Paper size:</span>
+            <button
+              onClick={() => onPaperChange("80mm")}
+              className={`px-3 py-1 rounded-full border text-xs font-semibold transition-colors ${
+                paper === "80mm" ? "bg-gold-500 text-white border-gold-500" : "border-border bg-muted/40"
+              }`}
+            >
+              80 mm
+            </button>
+            <button
+              onClick={() => onPaperChange("58mm")}
+              className={`px-3 py-1 rounded-full border text-xs font-semibold transition-colors ${
+                paper === "58mm" ? "bg-gold-500 text-white border-gold-500" : "border-border bg-muted/40"
+              }`}
+            >
+              58 mm
+            </button>
+          </div>
+          <div className="space-x-3">
+            <Button onClick={() => window.print()}>Print</Button>
+            <Button variant="outline" onClick={() => window.close()}>Close</Button>
+          </div>
+          <p className="text-[10px] text-muted-foreground max-w-xs mx-auto">
+            Tip: in your browser's print dialog, select your thermal printer,
+            set margins to <b>None</b>, and disable headers/footers for a clean receipt.
+          </p>
         </div>
       </div>
     </div>

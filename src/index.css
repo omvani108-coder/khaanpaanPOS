@@ -103,9 +103,48 @@
 ::-webkit-scrollbar-thumb { background: hsl(220 10% 78%); border-radius: 99px; }
 .dark ::-webkit-scrollbar-thumb { background: hsl(220 10% 32%); }
 
-/* ── Print ─────────────────────────────────────────────────────────────────── */
+/* ── Print (thermal receipt printer) ───────────────────────────────────────── */
+/*
+ * Target hardware: ESC/POS 58mm or 80mm roll printers (Epson TM-T82, TVS RP-3160,
+ * generic USB/Bluetooth Chinese printers). Browser print dialog → select the
+ * printer → physical page width is driven by @page size: 80mm/58mm auto.
+ *
+ * Default here is 80mm (most common). To force 58mm, add class "paper-58mm"
+ * to the root print element (InvoicePrintPage / KotPrintPage do this via
+ * localStorage setting).
+ */
+@page {
+  size: 80mm auto;
+  margin: 0;
+}
+@page :first {
+  margin-top: 0;
+}
+
 @media print {
-  .no-print { display: none !important; }
-  body { background: white; color: black; }
-  .print-area { margin: 0; padding: 0; }
+  /* Force receipts to render light regardless of dark-mode preference */
+  html, body, .print-area {
+    background: #fff !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Kill scrollbars / backdrops / sticky headers during print */
+  body { margin: 0 !important; padding: 0 !important; }
+  .no-print, nav, aside, header.md\:hidden, header.hidden { display: none !important; }
+
+  .print-area {
+    width: 80mm;
+    margin: 0 !important;
+    padding: 2mm 3mm !important;
+    font-family: "Courier New", ui-monospace, monospace;
+    color: #000;
+  }
+  .print-area.paper-58mm { width: 58mm; padding: 2mm 2mm !important; }
+
+  /* Receipts must never split across pages */
+  .print-area * { break-inside: avoid; }
+
+  /* Borders on thermal paper are fragile — force solid black 1px */
+  .print-area [class*="border-"] { border-color: #000 !important; }
 }
