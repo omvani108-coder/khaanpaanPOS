@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { updateOrderStatus } from "@/hooks/useOrders";
 import { cn, elapsedLabel } from "@/lib/utils";
 import type { OrderWithItems } from "@/types/db";
+import { OfflineBanner } from "@/components/OfflineBanner";
 
 const REFRESH_MS = 15_000;
 
@@ -97,16 +98,24 @@ export default function KitchenPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [rid, qc]);
 
-  // Realtime subscription
+  // Realtime subscription — cancelled-flag pattern guards against the
+  // subscribe() callback firing after unmount (rapid tab switches on a
+  // kitchen tablet can otherwise leak channels until the client's pool
+  // is exhausted).
   useEffect(() => {
     if (!rid || !supabaseConfigured) return;
+    let cancelled = false;
     const ch = supabase
       .channel(`kds-orders-${rid}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `restaurant_id=eq.${rid}` }, () => {
+        if (cancelled) return;
         void qc.invalidateQueries({ queryKey: ["kds_orders", rid] });
       })
       .subscribe();
-    return () => { void supabase.removeChannel(ch); };
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(ch);
+    };
   }, [rid, qc]);
 
   async function advance(orderId: string, to: "preparing" | "ready") {
@@ -123,6 +132,7 @@ export default function KitchenPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+      <OfflineBanner />
       {/* Top bar */}
       <header className="flex items-center gap-3 px-5 h-14 border-b border-white/8 bg-slate-900 flex-shrink-0">
         <div className="w-8 h-8 rounded-xl bg-gold-500 flex items-center justify-center shadow-gold-glow">

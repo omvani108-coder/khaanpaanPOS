@@ -31,9 +31,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOrders, updateOrderStatus } from "@/hooks/useOrders";
 import { Button } from "@/components/ui/Button";
 import { cn, elapsedLabel, formatINR, nextInvoiceNumber } from "@/lib/utils";
+import { computeTax } from "@/lib/gst";
 import { displayStatus, nextStatuses, statusClass, statusLabel } from "@/lib/orderStatus";
 import { WaiterNotification } from "@/components/orders/WaiterNotification";
 import type { MenuCategory, MenuItem, OrderWithItems, RestaurantTable } from "@/types/db";
+import { OfflineBanner } from "@/components/OfflineBanner";
 
 // ─── top-level view state ────────────────────────────────────────────────────
 type View =
@@ -150,8 +152,8 @@ export default function CaptainAppPage() {
       (s, [id, q]) => s + (byId[id]?.price ?? 0) * q,
       0
     );
-    const tax = Math.round(subtotal * tax_percent) / 100;
-    const total = subtotal + tax;
+    const tax = computeTax(subtotal, tax_percent);
+    const total = Math.round((subtotal + tax) * 100) / 100;
 
     const { data: order, error } = await supabase
       .from("orders")
@@ -231,6 +233,7 @@ export default function CaptainAppPage() {
   // ── render ──
   return (
     <div className="min-h-screen bg-background pb-4">
+      <OfflineBanner />
       {notification && (
         <WaiterNotification order={notification} onDismiss={() => setNotification(null)} />
       )}

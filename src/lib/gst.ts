@@ -59,6 +59,16 @@ function round2(n: number) {
   return Math.round(n * 100) / 100;
 }
 
+/**
+ * Compute tax amount for a given subtotal and percent.
+ * Always rounds to 2 decimals (paise precision). Use this everywhere client-side
+ * so we never get float drift like ₹17.999999999 that bites when compared to
+ * server-computed totals.
+ */
+export function computeTax(subtotal: number, taxPercent: number): number {
+  return round2(subtotal * taxPercent / 100);
+}
+
 /** Format as "5%" or "18% (IGST)" */
 export function gstLabel(pct: number, isIgst: boolean) {
   if (isIgst) return `IGST ${pct}%`;

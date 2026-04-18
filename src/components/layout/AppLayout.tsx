@@ -24,19 +24,23 @@ function GlobalOrderWatcher() {
 
   useEffect(() => {
     if (!rid || !supabaseConfigured) return;
+    let cancelled = false;
     const chan = supabase
       .channel(`orders-global-${rid}`)
       .on("postgres_changes",
         { event: "*", schema: "public", table: "orders", filter: `restaurant_id=eq.${rid}` },
-        () => void qc.invalidateQueries({ queryKey: ["orders", rid] })
+        () => { if (!cancelled) void qc.invalidateQueries({ queryKey: ["orders", rid] }); }
       )
       .on("postgres_changes",
         { event: "*", schema: "public", table: "order_items" },
-        () => void qc.invalidateQueries({ queryKey: ["orders", rid] })
+        () => { if (!cancelled) void qc.invalidateQueries({ queryKey: ["orders", rid] }); }
       )
       .subscribe();
 
-    return () => { void supabase.removeChannel(chan); };
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(chan);
+    };
   }, [rid, qc]);
 
   return null;

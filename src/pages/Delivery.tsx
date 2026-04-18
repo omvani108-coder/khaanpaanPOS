@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { formatINR } from "@/lib/utils";
+import { computeTax } from "@/lib/gst";
 import type { MenuItem, OrderSource } from "@/types/db";
 
 type CartLine = { menu_item_id: string; quantity: number };
@@ -40,8 +41,8 @@ export default function DeliveryPage() {
 
   const byId = useMemo(() => Object.fromEntries((items.data ?? []).map((i) => [i.id, i])), [items.data]);
   const subtotal = cart.reduce((s, l) => s + (byId[l.menu_item_id]?.price ?? 0) * l.quantity, 0);
-  const tax = Math.round(subtotal * Number(restaurant?.tax_percent ?? 5)) / 100;
-  const total = subtotal + tax;
+  const tax = computeTax(subtotal, Number(restaurant?.tax_percent ?? 5));
+  const total = Math.round((subtotal + tax) * 100) / 100;
 
   function addLine(menuId: string) {
     setCart((c) => {

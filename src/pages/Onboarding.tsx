@@ -64,7 +64,10 @@ export default function OnboardingPage() {
       });
 
       setCreatedRestaurantId(data.id);
-      await refreshRestaurant();
+      // Don't block the flow if refresh fails — the restaurant is already
+      // saved in DB; AuthContext will pick it up on the next render/signal.
+      try { await refreshRestaurant(); }
+      catch (refreshErr) { console.warn("[Onboarding] refreshRestaurant failed, continuing:", refreshErr); }
       setStep(1);
     } catch (err) {
       toast.error((err as Error).message);

@@ -66,7 +66,10 @@ export default function SettingsPage() {
         });
       }
       toast.success("Saved");
-      await refreshRestaurant();
+      // Save already succeeded — a refresh failure (network) shouldn't
+      // flip the toast to an error; the next navigation will re-fetch.
+      try { await refreshRestaurant(); }
+      catch (refreshErr) { console.warn("[Settings] refreshRestaurant failed post-save:", refreshErr); }
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
