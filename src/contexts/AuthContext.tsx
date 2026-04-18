@@ -32,15 +32,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session);
-      if (data.session?.user) {
-        // Fetch restaurant before clearing loading so guards never see
-        // a false "no restaurant" state during initial hydration.
-        await refreshRestaurant(data.session.user.id);
-      }
-      setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(async ({ data }) => {
+        setSession(data.session);
+        if (data.session?.user) {
+          // Fetch restaurant before clearing loading so guards never see
+          // a false "no restaurant" state during initial hydration.
+          try {
+            await refreshRestaurant(data.session.user.id);
+          } catch (err) {
+            // Non-fatal: user is signed in but profile fetch failed (network).
+            // Let them into the app; RequireRestaurant will redirect to onboarding
+            // if restaurant is genuinely missing, otherwise Settings page can retry.
+            console.error("[Auth] refreshRestaurant failed on boot:", err);
+          }
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        // Supabase unreachable or token corruption. Unblock the UI so the user
+        // sees the login screen instead of an infinite "Loading…".
+        console.error("[Auth] getSession failed:", err);
+        setLoading(false);
+      });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
     });

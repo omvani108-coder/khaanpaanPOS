@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { NewOrderProvider } from "@/contexts/NewOrderContext";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Core routes — eager (owner uses these every session)
 import LoginPage from "@/pages/Login";
@@ -55,6 +56,7 @@ function RequireRestaurant({ children }: { children: React.ReactElement }) {
 
 export default function App() {
   return (
+    <ErrorBoundary name="app-root">
     <BrowserRouter>
       <AuthProvider>
         <NewOrderProvider>
@@ -146,5 +148,6 @@ export default function App() {
         </NewOrderProvider>
       </AuthProvider>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }

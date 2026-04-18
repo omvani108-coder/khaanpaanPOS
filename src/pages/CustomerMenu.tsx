@@ -8,7 +8,7 @@
  * 4. Adds to cart with chosen modifiers
  * 5. Places order → goes live in kitchen / KDS instantly
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -198,8 +198,27 @@ export default function CustomerMenuPage() {
     return cart.filter((e) => e.itemId === itemId).reduce((s, e) => s + e.quantity, 0);
   }
 
+  // In-flight guard: prevents re-entry if user rapid-taps before setPlacing
+  // registers. Paired with a stable idempotency key so server will dedupe
+  // even if the first request succeeded but the response was lost.
+  const inFlightRef = useRef(false);
+  const idempotencyKeyRef = useRef<string | null>(null);
+
   async function place() {
     if (!token || cartCount === 0) return;
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+
+    // Generate once per checkout attempt; keep the same key across retries
+    // of the SAME cart so the server returns the existing order instead of
+    // creating a duplicate.
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+
     setPlacing(true);
     try {
       const payload = cart.flatMap((entry) =>
@@ -218,16 +237,19 @@ export default function CustomerMenuPage() {
         p_items: payload,
         p_customer_name: name.trim() || null,
         p_customer_phone: phone.trim() || null,
+        p_idempotency_key: idempotencyKeyRef.current,
       });
       if (error) throw error;
       setPlaced({ id: data as string });
       setCart([]);
       setCartOpen(false);
+      idempotencyKeyRef.current = null; // fresh key for the next order
       toast.success("Order placed!");
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
       setPlacing(false);
+      inFlightRef.current = false;
     }
   }
 

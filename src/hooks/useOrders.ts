@@ -57,11 +57,26 @@ function startOfTodayIso(): string {
   return d.toISOString();
 }
 
-/** Update order status, writing the appropriate timestamp as a side effect. */
-export async function updateOrderStatus(
-  orderId: string,
-  status: "pending" | "preparing" | "ready" | "served" | "completed" | "cancelled"
-) {
+type OrderStatus = "pending" | "preparing" | "ready" | "served" | "completed" | "cancelled";
+
+/**
+ * Valid predecessor statuses for each target status — enforces that we can only
+ * advance through the lifecycle (or cancel from an active state). This is the
+ * concurrency guard: two users both trying to transition the same order will
+ * race, but only ONE can win because the second update's `.in("status", ...)`
+ * filter will no longer match the row.
+ */
+const VALID_FROM: Record<OrderStatus, OrderStatus[]> = {
+  pending:   [],                                                  // initial state only
+  preparing: ["pending"],
+  ready:     ["pending", "preparing"],
+  served:    ["pending", "preparing", "ready"],
+  completed: ["pending", "preparing", "ready", "served"],
+  cancelled: ["pending", "preparing", "ready"],
+};
+
+/** Update order status with optimistic concurrency — throws if state changed underneath us. */
+export async function updateOrderStatus(orderId: string, status: OrderStatus) {
   const stampField =
     status === "preparing" ? "preparing_at"
     : status === "ready"   ? "ready_at"
@@ -73,6 +88,17 @@ export async function updateOrderStatus(
   const payload: Record<string, unknown> = { status };
   if (stampField) payload[stampField] = new Date().toISOString();
 
-  const { error } = await supabase.from("orders").update(payload).eq("id", orderId);
+  const validFrom = VALID_FROM[status];
+  let q = supabase.from("orders").update(payload).eq("id", orderId);
+  if (validFrom.length) q = q.in("status", validFrom);
+
+  // Use .select() to get the updated row back — if no row matched (because
+  // status was already advanced by another user), data will be empty.
+  const { data, error } = await q.select("id, status");
   if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error(
+      "This order was just updated by someone else. Please refresh to see the latest status."
+    );
+  }
 }
