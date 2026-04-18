@@ -12,6 +12,8 @@ import { formatINR } from "@/lib/utils";
 import { displayStatus } from "@/lib/orderStatus";
 import { OrderCard } from "@/components/orders/OrderCard";
 import { supabase, supabaseConfigured } from "@/lib/supabaseClient";
+import { useLang } from "@/contexts/LangContext";
+import t from "@/lib/translations";
 import type { OrderWithItems, ScheduleInsight } from "@/types/db";
 
 const SCHEDULE_URL = `${import.meta.env.VITE_SUPABASE_URL ?? ""}/functions/v1/ai-schedule`;
@@ -19,6 +21,7 @@ const SCHEDULE_URL = `${import.meta.env.VITE_SUPABASE_URL ?? ""}/functions/v1/ai
 export default function DashboardPage() {
   const { restaurant } = useAuth();
   const { clearNewOrders } = useNewOrders();
+  const { l } = useLang();
   const qc = useQueryClient();
 
   // Fetch today's orders directly — ensures earnings are populated even on
@@ -29,12 +32,12 @@ export default function DashboardPage() {
   useEffect(() => { clearNewOrders(); }, [clearNewOrders]);
 
   async function handleAdvance(id: string, to: "preparing" | "ready" | "served" | "completed") {
-    try { await updateOrderStatus(id, to); toast.success(`Order marked ${to}`); void qc.invalidateQueries({ queryKey: ["orders", restaurant?.id] }); }
+    try { await updateOrderStatus(id, to); toast.success(`${l(t.dashboard.markedAs)} ${to}`); void qc.invalidateQueries({ queryKey: ["orders", restaurant?.id] }); }
     catch (e) { toast.error((e as Error).message); }
   }
   async function handleCancel(id: string) {
-    if (!confirm("Cancel this order?")) return;
-    try { await updateOrderStatus(id, "cancelled"); toast.success("Order cancelled"); void qc.invalidateQueries({ queryKey: ["orders", restaurant?.id] }); }
+    if (!confirm(l(t.dashboard.cancelOrder))) return;
+    try { await updateOrderStatus(id, "cancelled"); toast.success(l(t.dashboard.cancelled)); void qc.invalidateQueries({ queryKey: ["orders", restaurant?.id] }); }
     catch (e) { toast.error((e as Error).message); }
   }
 
@@ -71,8 +74,8 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Heading */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">Today's Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-0.5">Live overview of kitchen, tables, and revenue.</p>
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">{l(t.dashboard.title)}</h1>
+        <p className="text-muted-foreground text-sm mt-0.5">{l(t.dashboard.subtitle)}</p>
       </div>
 
       {/* BhojanBot insight card — only shows once real data has loaded (no flash) */}
@@ -88,7 +91,7 @@ export default function DashboardPage() {
                   BhojanBot
                 </div>
                 <p className="text-sm text-foreground/80">
-                  Peak time: <span className="text-gold-600 font-semibold">{scheduleQ.data.peak_label}</span>
+                  {l(t.dashboard.peakTime)}: <span className="text-gold-600 font-semibold">{scheduleQ.data.peak_label}</span>
                   {" — "}
                   {scheduleQ.data.staffing_rec.split("\n")[0].replace(/^[•\-]\s*/, "")}
                 </p>
@@ -96,7 +99,7 @@ export default function DashboardPage() {
                   to="/schedule"
                   className="text-xs text-gold-600/70 hover:text-gold-600 mt-1 inline-flex items-center gap-1 transition-colors"
                 >
-                  <BrainCircuit className="h-3 w-3" /> Full schedule & analytics →
+                  <BrainCircuit className="h-3 w-3" /> {l(t.dashboard.fullSchedule)}
                 </Link>
               </div>
             </div>
@@ -106,25 +109,25 @@ export default function DashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard icon={<ClipboardList className="h-5 w-5" />} label="Active orders"  value={pending.length}       color="blue"    to="/orders" />
-        <StatCard icon={<AlertTriangle className="h-5 w-5" />} label="Delayed"         value={delayed.length}       color="red"     to="/orders" />
-        <StatCard icon={<CheckCircle2  className="h-5 w-5" />} label="Completed"       value={completed.length}     color="emerald" to="/bills"  />
-        <StatCard icon={<IndianRupee   className="h-5 w-5" />} label="Today's Earnings" value={formatINR(revenue)}   color="gold"    to="/earnings" />
+        <StatCard icon={<ClipboardList className="h-5 w-5" />} label={l(t.dashboard.activeOrders)}   value={pending.length}     color="blue"    to="/orders" />
+        <StatCard icon={<AlertTriangle className="h-5 w-5" />} label={l(t.dashboard.delayed)}         value={delayed.length}     color="red"     to="/orders" />
+        <StatCard icon={<CheckCircle2  className="h-5 w-5" />} label={l(t.dashboard.completed)}       value={completed.length}   color="emerald" to="/bills"  />
+        <StatCard icon={<IndianRupee   className="h-5 w-5" />} label={l(t.dashboard.todaysEarnings)}  value={formatINR(revenue)} color="gold"    to="/earnings" />
       </div>
 
       {/* Active orders */}
       <div>
-        <SectionHeading title="Active Orders">
+        <SectionHeading title={l(t.dashboard.activeOrdersSection)}>
           <Link to="/orders" className="text-sm font-medium text-gold-600 hover:text-gold-500 transition-colors">
-            View all →
+            {l(t.dashboard.viewAll)}
           </Link>
         </SectionHeading>
 
         {pending.length === 0 ? (
           <EmptyState
             icon={<Clock className="h-9 w-9 text-slate-300" />}
-            title="No active orders"
-            description="Orders from QR scans and delivery partners will appear here."
+            title={l(t.dashboard.noOrders)}
+            description={l(t.dashboard.noOrdersDesc)}
           />
         ) : (
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mt-3">
@@ -139,10 +142,10 @@ export default function DashboardPage() {
 }
 
 const colorMap = {
-  blue:   { bg: "bg-blue-50",    icon: "text-blue-600",    ring: "ring-blue-200"    },
-  red:    { bg: "bg-red-50",     icon: "text-red-600",     ring: "ring-red-200"     },
-  emerald:{ bg: "bg-emerald-50", icon: "text-emerald-600", ring: "ring-emerald-200" },
-  gold:   { bg: "bg-emerald-50",  icon: "text-emerald-600", ring: "ring-emerald-200", value: "text-emerald-600" },
+  blue:   { bg: "bg-blue-500/10 dark:bg-blue-500/15",    icon: "text-blue-600 dark:text-blue-400",    accent: "bg-blue-500"    },
+  red:    { bg: "bg-red-500/10 dark:bg-red-500/15",      icon: "text-red-600 dark:text-red-400",      accent: "bg-red-500"     },
+  emerald:{ bg: "bg-emerald-500/10 dark:bg-emerald-500/15", icon: "text-emerald-600 dark:text-emerald-400", accent: "bg-emerald-500" },
+  gold:   { bg: "bg-emerald-500/10 dark:bg-emerald-500/15", icon: "text-emerald-600 dark:text-emerald-400", accent: "bg-emerald-500", value: "text-emerald-600 dark:text-emerald-400" },
 };
 
 function StatCard({
@@ -156,22 +159,24 @@ function StatCard({
 }) {
   const c = colorMap[color];
   const inner = (
-    <CardContent className="p-4 pt-4 flex items-center gap-3">
-      <div className={`rounded-xl p-2.5 flex-shrink-0 ring-1 ${c.bg} ${c.icon} ${c.ring}`}>
+    <CardContent className="p-4 flex flex-col gap-3">
+      {/* Icon pill */}
+      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${c.bg} ${c.icon}`}>
         {icon}
       </div>
-      <div className="min-w-0">
-        <div className="text-xs text-muted-foreground truncate">{label}</div>
-        <div className={`text-xl font-bold ${"value" in c ? c.value : "text-foreground"}`}>{value}</div>
+      {/* Label + value stacked */}
+      <div>
+        <div className="text-[11px] text-muted-foreground font-medium leading-tight mb-0.5">{label}</div>
+        <div className={`text-2xl font-bold leading-none ${"value" in c ? c.value : "text-foreground"}`}>{value}</div>
       </div>
     </CardContent>
   );
   return to ? (
-    <Link to={to} className="block hover:opacity-80 transition-opacity">
-      <Card>{inner}</Card>
+    <Link to={to} className="block hover:opacity-80 active:scale-[0.98] transition-all">
+      <Card className="overflow-hidden">{inner}</Card>
     </Link>
   ) : (
-    <Card>{inner}</Card>
+    <Card className="overflow-hidden">{inner}</Card>
   );
 }
 

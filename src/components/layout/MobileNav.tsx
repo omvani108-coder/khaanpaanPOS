@@ -8,46 +8,47 @@ import {
 import { cn } from "@/lib/utils";
 import { useNewOrders } from "@/contexts/NewOrderContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLang } from "@/contexts/LangContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
-// Primary 4 items + "More" — bottom bar
-const primary = [
-  { to: "/dashboard", label: "Home",   icon: LayoutDashboard },
-  { to: "/orders",    label: "Orders", icon: ClipboardList },
-  { to: "/menu",      label: "Menu",   icon: BookOpen },
-  { to: "/floor",     label: "Floor",  icon: LayoutGrid },
-];
-
-// Everything else — drawer grouped
-const more = [
-  { group: "Daily", items: [
-    { to: "/bills",     label: "Bills",    icon: Receipt },
-    { to: "/earnings",  label: "Earnings", icon: TrendingUp },
-  ]},
-  { group: "Restaurant", items: [
-    { to: "/tables",    label: "Tables & QR", icon: QrCode },
-    { to: "/customers", label: "Customers",   icon: Users },
-    { to: "/delivery",  label: "Delivery",    icon: Truck },
-  ]},
-  { group: "Staff", items: [
-    { to: "/kitchen",   label: "Kitchen KDS", icon: UtensilsCrossed },
-    { to: "/captain",   label: "Captain App", icon: UserCircle2 },
-    { to: "/shift",     label: "Shift",       icon: IndianRupee },
-  ]},
-  { group: "AI & Settings", items: [
-    { to: "/schedule",  label: "AI Schedule", icon: BrainCircuit },
-    { to: "/settings",  label: "Settings",    icon: Settings },
-  ]},
-];
+import t from "@/lib/translations";
 
 export function MobileNav() {
   const { newOrderCount, clearNewOrders } = useNewOrders();
   const { signOut, user } = useAuth();
+  const { l } = useLang();
   const [open, setOpen] = useState(false);
+
+  const primary = [
+    { to: "/dashboard", label: l(t.nav.home),      icon: LayoutDashboard },
+    { to: "/orders",    label: l(t.nav.orders),    icon: ClipboardList },
+    { to: "/menu",      label: l(t.nav.menu),      icon: BookOpen },
+    { to: "/floor",     label: l(t.nav.floor),     icon: LayoutGrid },
+  ];
+
+  const more = [
+    { group: l(t.nav.daily), items: [
+      { to: "/bills",    label: l(t.nav.bills),    icon: Receipt },
+      { to: "/earnings", label: l(t.nav.earnings), icon: TrendingUp },
+    ]},
+    { group: l(t.nav.restaurant), items: [
+      { to: "/tables",    label: l(t.nav.tablesQr),  icon: QrCode },
+      { to: "/customers", label: l(t.nav.customers), icon: Users },
+      { to: "/delivery",  label: l(t.nav.delivery),  icon: Truck },
+    ]},
+    { group: l(t.nav.staff), items: [
+      { to: "/kitchen",  label: l(t.nav.kitchen), icon: UtensilsCrossed },
+      { to: "/captain",  label: l(t.nav.captain), icon: UserCircle2 },
+      { to: "/shift",    label: l(t.nav.shift),   icon: IndianRupee },
+    ]},
+    { group: `${l(t.nav.ai)} & ${l(t.nav.settings)}`, items: [
+      { to: "/schedule", label: l(t.nav.schedule), icon: BrainCircuit },
+      { to: "/settings", label: l(t.nav.settings), icon: Settings },
+    ]},
+  ];
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 flex no-print bg-card border-t border-border">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 flex no-print bg-card/95 backdrop-blur-md border-t border-border/60 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] safe-area-bottom">
         {primary.map(({ to, label, icon: Icon }) => {
           const showDot = newOrderCount > 0 && (to === "/dashboard" || to === "/orders");
           return (
@@ -57,17 +58,20 @@ export function MobileNav() {
               onClick={() => { if (to === "/dashboard" || to === "/orders") clearNewOrders(); }}
               className={({ isActive }) =>
                 cn(
-                  "flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors",
-                  isActive ? "text-gold-600" : "text-slate-400 hover:text-slate-600"
+                  "flex-1 flex flex-col items-center gap-0.5 py-3 text-[10px] font-semibold transition-all active:scale-95",
+                  isActive ? "text-gold-600" : "text-slate-400"
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <div className={cn("relative rounded-xl p-1.5 transition-all", isActive ? "bg-gold-500/10" : "")}>
-                    <Icon className="h-5 w-5" />
+                  <div className={cn(
+                    "relative rounded-2xl p-2 transition-all duration-200",
+                    isActive ? "bg-gold-500/12 shadow-[0_2px_8px_rgba(196,148,24,0.2)]" : ""
+                  )}>
+                    <Icon className={cn("h-5 w-5 transition-transform", isActive ? "scale-110" : "")} />
                     {showDot && (
-                      <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-green-400 shadow-[0_0_8px_3px_rgba(74,222,128,0.9)] animate-pulse border border-white" />
+                      <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-green-400 shadow-[0_0_8px_3px_rgba(74,222,128,0.9)] animate-pulse border-2 border-card" />
                     )}
                   </div>
                   {label}
@@ -80,9 +84,9 @@ export function MobileNav() {
         {/* More button */}
         <button
           onClick={() => setOpen(true)}
-          className="flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium text-slate-400 hover:text-slate-600 transition-colors"
+          className="flex-1 flex flex-col items-center gap-0.5 py-3 text-[10px] font-semibold text-slate-400 transition-all active:scale-95"
         >
-          <div className="rounded-xl p-1.5">
+          <div className="rounded-2xl p-2">
             <MenuIcon className="h-5 w-5" />
           </div>
           More

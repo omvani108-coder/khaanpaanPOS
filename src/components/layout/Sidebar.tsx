@@ -7,47 +7,50 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNewOrders } from "@/contexts/NewOrderContext";
+import { useLang } from "@/contexts/LangContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
-const navGroups = [
-  {
-    label: "Daily",
-    items: [
-      { to: "/dashboard", label: "Dashboard",  icon: LayoutDashboard },
-      { to: "/orders",    label: "Orders",     icon: ClipboardList },
-      { to: "/floor",     label: "Floor Plan", icon: LayoutGrid },
-      { to: "/bills",     label: "Bills",      icon: Receipt },
-      { to: "/earnings",  label: "Earnings",   icon: TrendingUp },
-    ],
-  },
-  {
-    label: "Restaurant",
-    items: [
-      { to: "/menu",      label: "Menu",        icon: BookOpen },
-      { to: "/tables",    label: "Tables & QR", icon: QrCode },
-      { to: "/customers", label: "Customers",   icon: Users },
-      { to: "/delivery",  label: "Delivery",    icon: Truck },
-    ],
-  },
-  {
-    label: "Staff",
-    items: [
-      { to: "/kitchen",  label: "Kitchen KDS", icon: UtensilsCrossed },
-      { to: "/captain",  label: "Captain App", icon: UserCircle2 },
-      { to: "/shift",    label: "Shift",       icon: IndianRupee },
-    ],
-  },
-  {
-    label: "AI",
-    items: [
-      { to: "/schedule", label: "AI Schedule", icon: BrainCircuit },
-    ],
-  },
-];
+import t from "@/lib/translations";
 
 export function Sidebar() {
   const { restaurant, signOut, user } = useAuth();
   const { newOrderCount, clearNewOrders } = useNewOrders();
+  const { l } = useLang();
+
+  const navGroups = [
+    {
+      label: l(t.nav.daily),
+      items: [
+        { to: "/dashboard", label: l(t.nav.dashboard), icon: LayoutDashboard },
+        { to: "/orders",    label: l(t.nav.orders),    icon: ClipboardList },
+        { to: "/floor",     label: l(t.nav.floorPlan), icon: LayoutGrid },
+        { to: "/bills",     label: l(t.nav.bills),     icon: Receipt },
+        { to: "/earnings",  label: l(t.nav.earnings),  icon: TrendingUp },
+      ],
+    },
+    {
+      label: l(t.nav.restaurant),
+      items: [
+        { to: "/menu",      label: l(t.nav.menu),      icon: BookOpen },
+        { to: "/tables",    label: l(t.nav.tablesQr),  icon: QrCode },
+        { to: "/customers", label: l(t.nav.customers), icon: Users },
+        { to: "/delivery",  label: l(t.nav.delivery),  icon: Truck },
+      ],
+    },
+    {
+      label: l(t.nav.staff),
+      items: [
+        { to: "/kitchen", label: l(t.nav.kitchen),  icon: UtensilsCrossed },
+        { to: "/captain", label: l(t.nav.captain),  icon: UserCircle2 },
+        { to: "/shift",   label: l(t.nav.shift),    icon: IndianRupee },
+      ],
+    },
+    {
+      label: l(t.nav.ai),
+      items: [
+        { to: "/schedule", label: l(t.nav.schedule), icon: BrainCircuit },
+      ],
+    },
+  ];
 
   return (
     <aside className="hidden md:flex w-56 flex-col no-print bg-card border-r border-border">
@@ -66,9 +69,9 @@ export function Sidebar() {
 
       {/* Restaurant chip */}
       <div className="mx-2.5 mt-2.5 mb-1 px-3 py-2 rounded-xl bg-muted border border-border">
-        <div className="text-[9px] text-muted-foreground uppercase tracking-widest">Restaurant</div>
+        <div className="text-[9px] text-muted-foreground uppercase tracking-widest">{l(t.common.restaurant)}</div>
         <div className="text-xs font-semibold text-foreground/80 truncate mt-0.5">
-          {restaurant?.name ?? "Not set up yet"}
+          {restaurant?.name ?? l(t.common.notSetUp)}
         </div>
       </div>
 
@@ -83,36 +86,36 @@ export function Sidebar() {
               {group.items.map(({ to, label, icon: Icon }) => {
                 const showDot = newOrderCount > 0 && (to === "/dashboard" || to === "/orders");
                 return (
-                <NavLink
-                  key={to}
-                  to={to}
-                  onClick={() => { if (to === "/dashboard" || to === "/orders") clearNewOrders(); }}
-                  className={({ isActive }) =>
-                    cn(
-                      "group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-all",
-                      isActive
-                        ? "bg-gold-500/10 text-gold-600"
-                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-white/8"
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <div className="relative flex-shrink-0">
-                        <Icon className={cn("h-3.5 w-3.5", isActive ? "text-gold-600" : "opacity-50 group-hover:opacity-80")} />
+                  <NavLink
+                    key={to}
+                    to={to}
+                    onClick={() => { if (to === "/dashboard" || to === "/orders") clearNewOrders(); }}
+                    className={({ isActive }) =>
+                      cn(
+                        "group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-all",
+                        isActive
+                          ? "bg-gold-500/10 text-gold-600"
+                          : "text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-white/8"
+                      )
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <div className="relative flex-shrink-0">
+                          <Icon className={cn("h-3.5 w-3.5", isActive ? "text-gold-600" : "opacity-50 group-hover:opacity-80")} />
+                          {showDot && (
+                            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-green-400 shadow-[0_0_6px_2px_rgba(74,222,128,0.8)] animate-pulse" />
+                          )}
+                        </div>
+                        {label}
                         {showDot && (
-                          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-green-400 shadow-[0_0_6px_2px_rgba(74,222,128,0.8)] animate-pulse" />
+                          <span className="ml-auto text-[10px] font-bold bg-green-400 text-white rounded-full px-1.5 py-0.5 leading-none shadow-[0_0_6px_rgba(74,222,128,0.8)]">
+                            {newOrderCount}
+                          </span>
                         )}
-                      </div>
-                      {label}
-                      {showDot && (
-                        <span className="ml-auto text-[10px] font-bold bg-green-400 text-white rounded-full px-1.5 py-0.5 leading-none shadow-[0_0_6px_rgba(74,222,128,0.8)]">
-                          {newOrderCount}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </NavLink>
+                      </>
+                    )}
+                  </NavLink>
                 );
               })}
             </div>
@@ -127,19 +130,19 @@ export function Sidebar() {
           className={({ isActive }) =>
             cn(
               "group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-all mb-1",
-              isActive ? "bg-gold-500/10 text-gold-600" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+              isActive ? "bg-gold-500/10 text-gold-600" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-white/8"
             )
           }
         >
           {({ isActive }) => (
             <>
               <Settings className={cn("h-3.5 w-3.5 flex-shrink-0", isActive ? "text-gold-600" : "opacity-50 group-hover:opacity-80")} />
-              Settings
+              {l(t.nav.settings)}
             </>
           )}
         </NavLink>
         <div className="flex items-center justify-between px-2 mb-1">
-          <div className="text-[10px] text-muted-foreground truncate">{user?.email ?? "Guest"}</div>
+          <div className="text-[10px] text-muted-foreground truncate max-w-[110px]">{user?.email ?? "Guest"}</div>
           <ThemeToggle />
         </div>
         <button
@@ -147,7 +150,7 @@ export function Sidebar() {
           className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12px] text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
         >
           <LogOut className="h-3.5 w-3.5" />
-          Sign out
+          {l(t.nav.signOut)}
         </button>
       </div>
     </aside>
